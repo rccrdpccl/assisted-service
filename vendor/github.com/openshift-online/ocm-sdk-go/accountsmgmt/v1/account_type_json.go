@@ -21,7 +21,6 @@ package v1 // github.com/openshift-online/ocm-sdk-go/accountsmgmt/v1
 
 import (
 	"io"
-	"net/http"
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
@@ -32,7 +31,10 @@ import (
 func MarshalAccount(object *Account, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeAccount(object, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -150,11 +152,29 @@ func writeAccount(object *Account, stream *jsoniter.Stream) {
 		if count > 0 {
 			stream.WriteMore()
 		}
+		stream.WriteObjectField("rhit_account_id")
+		stream.WriteString(object.rhitAccountID)
+		count++
+	}
+	present_ = object.bitmap_&8192 != 0
+	if present_ {
+		if count > 0 {
+			stream.WriteMore()
+		}
+		stream.WriteObjectField("rhit_web_user_id")
+		stream.WriteString(object.rhitWebUserId)
+		count++
+	}
+	present_ = object.bitmap_&16384 != 0
+	if present_ {
+		if count > 0 {
+			stream.WriteMore()
+		}
 		stream.WriteObjectField("service_account")
 		stream.WriteBool(object.serviceAccount)
 		count++
 	}
-	present_ = object.bitmap_&8192 != 0
+	present_ = object.bitmap_&32768 != 0
 	if present_ {
 		if count > 0 {
 			stream.WriteMore()
@@ -163,14 +183,13 @@ func writeAccount(object *Account, stream *jsoniter.Stream) {
 		stream.WriteString((object.updatedAt).Format(time.RFC3339))
 		count++
 	}
-	present_ = object.bitmap_&16384 != 0
+	present_ = object.bitmap_&65536 != 0
 	if present_ {
 		if count > 0 {
 			stream.WriteMore()
 		}
 		stream.WriteObjectField("username")
 		stream.WriteString(object.username)
-		count++
 	}
 	stream.WriteObjectEnd()
 }
@@ -178,9 +197,6 @@ func writeAccount(object *Account, stream *jsoniter.Stream) {
 // UnmarshalAccount reads a value of the 'account' type from the given
 // source, which can be an slice of bytes, a string or a reader.
 func UnmarshalAccount(source interface{}) (object *Account, err error) {
-	if source == http.NoBody {
-		return
-	}
 	iterator, err := helpers.NewIterator(source)
 	if err != nil {
 		return
@@ -250,10 +266,18 @@ func readAccount(iterator *jsoniter.Iterator) *Account {
 			value := readOrganization(iterator)
 			object.organization = value
 			object.bitmap_ |= 2048
+		case "rhit_account_id":
+			value := iterator.ReadString()
+			object.rhitAccountID = value
+			object.bitmap_ |= 4096
+		case "rhit_web_user_id":
+			value := iterator.ReadString()
+			object.rhitWebUserId = value
+			object.bitmap_ |= 8192
 		case "service_account":
 			value := iterator.ReadBool()
 			object.serviceAccount = value
-			object.bitmap_ |= 4096
+			object.bitmap_ |= 16384
 		case "updated_at":
 			text := iterator.ReadString()
 			value, err := time.Parse(time.RFC3339, text)
@@ -261,11 +285,11 @@ func readAccount(iterator *jsoniter.Iterator) *Account {
 				iterator.ReportError("", err.Error())
 			}
 			object.updatedAt = value
-			object.bitmap_ |= 8192
+			object.bitmap_ |= 32768
 		case "username":
 			value := iterator.ReadString()
 			object.username = value
-			object.bitmap_ |= 16384
+			object.bitmap_ |= 65536
 		default:
 			iterator.ReadAny()
 		}

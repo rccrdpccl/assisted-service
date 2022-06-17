@@ -20,6 +20,7 @@ limitations under the License.
 package v1 // github.com/openshift-online/ocm-sdk-go/accountsmgmt/v1
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"io"
@@ -29,7 +30,6 @@ import (
 	"path"
 	"time"
 
-	jsoniter "github.com/json-iterator/go"
 	"github.com/openshift-online/ocm-sdk-go/errors"
 	"github.com/openshift-online/ocm-sdk-go/helpers"
 )
@@ -89,17 +89,6 @@ func (c *OrganizationClient) QuotaCost() *QuotaCostClient {
 	return NewQuotaCostClient(
 		c.transport,
 		path.Join(c.path, "quota_cost"),
-	)
-}
-
-// QuotaSummary returns the target 'quota_summary' resource.
-//
-// Reference to the service that returns the summary of the resource quota for this
-// organization.
-func (c *OrganizationClient) QuotaSummary() *QuotaSummaryClient {
-	return NewQuotaSummaryClient(
-		c.transport,
-		path.Join(c.path, "quota_summary"),
 	)
 }
 
@@ -266,6 +255,13 @@ func (r *OrganizationGetRequest) Header(name string, value interface{}) *Organiz
 	return r
 }
 
+// Impersonate wraps requests on behalf of another user.
+// Note: Services that do not support this feature may silently ignore this call.
+func (r *OrganizationGetRequest) Impersonate(user string) *OrganizationGetRequest {
+	helpers.AddImpersonationHeader(&r.header, user)
+	return r
+}
+
 // Send sends this request, waits for the response, and returns it.
 //
 // This is a potentially lengthy operation, as it requires network communication.
@@ -298,15 +294,21 @@ func (r *OrganizationGetRequest) SendContext(ctx context.Context) (result *Organ
 	result = &OrganizationGetResponse{}
 	result.status = response.StatusCode
 	result.header = response.Header
+	reader := bufio.NewReader(response.Body)
+	_, err = reader.Peek(1)
+	if err == io.EOF {
+		err = nil
+		return
+	}
 	if result.status >= 400 {
-		result.err, err = errors.UnmarshalError(response.Body)
+		result.err, err = errors.UnmarshalErrorStatus(reader, result.status)
 		if err != nil {
 			return
 		}
 		err = result.err
 		return
 	}
-	err = readOrganizationGetResponse(result, response.Body)
+	err = readOrganizationGetResponse(result, reader)
 	if err != nil {
 		return
 	}
@@ -388,6 +390,13 @@ func (r *OrganizationUpdateRequest) Header(name string, value interface{}) *Orga
 	return r
 }
 
+// Impersonate wraps requests on behalf of another user.
+// Note: Services that do not support this feature may silently ignore this call.
+func (r *OrganizationUpdateRequest) Impersonate(user string) *OrganizationUpdateRequest {
+	helpers.AddImpersonationHeader(&r.header, user)
+	return r
+}
+
 // Body sets the value of the 'body' parameter.
 //
 //
@@ -434,29 +443,25 @@ func (r *OrganizationUpdateRequest) SendContext(ctx context.Context) (result *Or
 	result = &OrganizationUpdateResponse{}
 	result.status = response.StatusCode
 	result.header = response.Header
+	reader := bufio.NewReader(response.Body)
+	_, err = reader.Peek(1)
+	if err == io.EOF {
+		err = nil
+		return
+	}
 	if result.status >= 400 {
-		result.err, err = errors.UnmarshalError(response.Body)
+		result.err, err = errors.UnmarshalErrorStatus(reader, result.status)
 		if err != nil {
 			return
 		}
 		err = result.err
 		return
 	}
-	err = readOrganizationUpdateResponse(result, response.Body)
+	err = readOrganizationUpdateResponse(result, reader)
 	if err != nil {
 		return
 	}
 	return
-}
-
-// marshall is the method used internally to marshal requests for the
-// 'update' method.
-func (r *OrganizationUpdateRequest) marshal(writer io.Writer) error {
-	stream := helpers.NewStream(writer)
-	r.stream(stream)
-	return stream.Error
-}
-func (r *OrganizationUpdateRequest) stream(stream *jsoniter.Stream) {
 }
 
 // OrganizationUpdateResponse is the response for the 'update' method.

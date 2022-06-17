@@ -33,6 +33,7 @@ type ClusterAuthorizationRequestBuilder struct {
 	externalClusterID string
 	productID         string
 	productCategory   string
+	quotaVersion      string
 	resources         []*ReservedResourceBuilder
 	byoc              bool
 	disconnected      bool
@@ -43,6 +44,11 @@ type ClusterAuthorizationRequestBuilder struct {
 // NewClusterAuthorizationRequest creates a new builder of 'cluster_authorization_request' objects.
 func NewClusterAuthorizationRequest() *ClusterAuthorizationRequestBuilder {
 	return &ClusterAuthorizationRequestBuilder{}
+}
+
+// Empty returns true if the builder is empty, i.e. no attribute has a value.
+func (b *ClusterAuthorizationRequestBuilder) Empty() bool {
+	return b == nil || b.bitmap_ == 0
 }
 
 // BYOC sets the value of the 'BYOC' attribute to the given value.
@@ -153,12 +159,21 @@ func (b *ClusterAuthorizationRequestBuilder) ProductCategory(value string) *Clus
 	return b
 }
 
+// QuotaVersion sets the value of the 'quota_version' attribute to the given value.
+//
+//
+func (b *ClusterAuthorizationRequestBuilder) QuotaVersion(value string) *ClusterAuthorizationRequestBuilder {
+	b.quotaVersion = value
+	b.bitmap_ |= 4096
+	return b
+}
+
 // Reserve sets the value of the 'reserve' attribute to the given value.
 //
 //
 func (b *ClusterAuthorizationRequestBuilder) Reserve(value bool) *ClusterAuthorizationRequestBuilder {
 	b.reserve = value
-	b.bitmap_ |= 4096
+	b.bitmap_ |= 8192
 	return b
 }
 
@@ -168,7 +183,7 @@ func (b *ClusterAuthorizationRequestBuilder) Reserve(value bool) *ClusterAuthori
 func (b *ClusterAuthorizationRequestBuilder) Resources(values ...*ReservedResourceBuilder) *ClusterAuthorizationRequestBuilder {
 	b.resources = make([]*ReservedResourceBuilder, len(values))
 	copy(b.resources, values)
-	b.bitmap_ |= 8192
+	b.bitmap_ |= 16384
 	return b
 }
 
@@ -190,6 +205,7 @@ func (b *ClusterAuthorizationRequestBuilder) Copy(object *ClusterAuthorizationRe
 	b.managed = object.managed
 	b.productID = object.productID
 	b.productCategory = object.productCategory
+	b.quotaVersion = object.quotaVersion
 	b.reserve = object.reserve
 	if object.resources != nil {
 		b.resources = make([]*ReservedResourceBuilder, len(object.resources))
@@ -218,6 +234,7 @@ func (b *ClusterAuthorizationRequestBuilder) Build() (object *ClusterAuthorizati
 	object.managed = b.managed
 	object.productID = b.productID
 	object.productCategory = b.productCategory
+	object.quotaVersion = b.quotaVersion
 	object.reserve = b.reserve
 	if b.resources != nil {
 		object.resources = make([]*ReservedResource, len(b.resources))

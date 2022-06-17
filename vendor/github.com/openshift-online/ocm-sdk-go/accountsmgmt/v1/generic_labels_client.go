@@ -20,6 +20,7 @@ limitations under the License.
 package v1 // github.com/openshift-online/ocm-sdk-go/accountsmgmt/v1
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"io"
@@ -28,7 +29,6 @@ import (
 	"net/url"
 	"path"
 
-	jsoniter "github.com/json-iterator/go"
 	"github.com/openshift-online/ocm-sdk-go/errors"
 	"github.com/openshift-online/ocm-sdk-go/helpers"
 )
@@ -106,6 +106,13 @@ func (r *GenericLabelsAddRequest) Header(name string, value interface{}) *Generi
 	return r
 }
 
+// Impersonate wraps requests on behalf of another user.
+// Note: Services that do not support this feature may silently ignore this call.
+func (r *GenericLabelsAddRequest) Impersonate(user string) *GenericLabelsAddRequest {
+	helpers.AddImpersonationHeader(&r.header, user)
+	return r
+}
+
 // Body sets the value of the 'body' parameter.
 //
 // Label
@@ -152,29 +159,25 @@ func (r *GenericLabelsAddRequest) SendContext(ctx context.Context) (result *Gene
 	result = &GenericLabelsAddResponse{}
 	result.status = response.StatusCode
 	result.header = response.Header
+	reader := bufio.NewReader(response.Body)
+	_, err = reader.Peek(1)
+	if err == io.EOF {
+		err = nil
+		return
+	}
 	if result.status >= 400 {
-		result.err, err = errors.UnmarshalError(response.Body)
+		result.err, err = errors.UnmarshalErrorStatus(reader, result.status)
 		if err != nil {
 			return
 		}
 		err = result.err
 		return
 	}
-	err = readGenericLabelsAddResponse(result, response.Body)
+	err = readGenericLabelsAddResponse(result, reader)
 	if err != nil {
 		return
 	}
 	return
-}
-
-// marshall is the method used internally to marshal requests for the
-// 'add' method.
-func (r *GenericLabelsAddRequest) marshal(writer io.Writer) error {
-	stream := helpers.NewStream(writer)
-	r.stream(stream)
-	return stream.Error
-}
-func (r *GenericLabelsAddRequest) stream(stream *jsoniter.Stream) {
 }
 
 // GenericLabelsAddResponse is the response for the 'add' method.
@@ -253,6 +256,13 @@ func (r *GenericLabelsListRequest) Header(name string, value interface{}) *Gener
 	return r
 }
 
+// Impersonate wraps requests on behalf of another user.
+// Note: Services that do not support this feature may silently ignore this call.
+func (r *GenericLabelsListRequest) Impersonate(user string) *GenericLabelsListRequest {
+	helpers.AddImpersonationHeader(&r.header, user)
+	return r
+}
+
 // Page sets the value of the 'page' parameter.
 //
 // Index of the returned page, where one corresponds to the first page. As this
@@ -310,15 +320,21 @@ func (r *GenericLabelsListRequest) SendContext(ctx context.Context) (result *Gen
 	result = &GenericLabelsListResponse{}
 	result.status = response.StatusCode
 	result.header = response.Header
+	reader := bufio.NewReader(response.Body)
+	_, err = reader.Peek(1)
+	if err == io.EOF {
+		err = nil
+		return
+	}
 	if result.status >= 400 {
-		result.err, err = errors.UnmarshalError(response.Body)
+		result.err, err = errors.UnmarshalErrorStatus(reader, result.status)
 		if err != nil {
 			return
 		}
 		err = result.err
 		return
 	}
-	err = readGenericLabelsListResponse(result, response.Body)
+	err = readGenericLabelsListResponse(result, reader)
 	if err != nil {
 		return
 	}

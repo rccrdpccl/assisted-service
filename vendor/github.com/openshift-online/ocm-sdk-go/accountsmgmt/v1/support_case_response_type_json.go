@@ -21,7 +21,6 @@ package v1 // github.com/openshift-online/ocm-sdk-go/accountsmgmt/v1
 
 import (
 	"io"
-	"net/http"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/openshift-online/ocm-sdk-go/helpers"
@@ -31,7 +30,10 @@ import (
 func MarshalSupportCaseResponse(object *SupportCaseResponse, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeSupportCaseResponse(object, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -142,7 +144,6 @@ func writeSupportCaseResponse(object *SupportCaseResponse, stream *jsoniter.Stre
 		}
 		stream.WriteObjectField("summary")
 		stream.WriteString(object.summary)
-		count++
 	}
 	stream.WriteObjectEnd()
 }
@@ -150,9 +151,6 @@ func writeSupportCaseResponse(object *SupportCaseResponse, stream *jsoniter.Stre
 // UnmarshalSupportCaseResponse reads a value of the 'support_case_response' type from the given
 // source, which can be an slice of bytes, a string or a reader.
 func UnmarshalSupportCaseResponse(source interface{}) (object *SupportCaseResponse, err error) {
-	if source == http.NoBody {
-		return
-	}
 	iterator, err := helpers.NewIterator(source)
 	if err != nil {
 		return

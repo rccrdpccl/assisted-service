@@ -20,6 +20,7 @@ limitations under the License.
 package v1 // github.com/openshift-online/ocm-sdk-go/clustersmgmt/v1
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"io"
@@ -27,7 +28,6 @@ import (
 	"net/http"
 	"net/url"
 
-	jsoniter "github.com/json-iterator/go"
 	"github.com/openshift-online/ocm-sdk-go/errors"
 	"github.com/openshift-online/ocm-sdk-go/helpers"
 )
@@ -52,7 +52,7 @@ func NewKeyRingsInquiryClient(transport http.RoundTripper, path string) *KeyRing
 
 // Search creates a request for the 'search' method.
 //
-// Retrieves the list of available regions of the cloud provider.
+// Retrieves the list of available key rings of the cloud provider.
 // IMPORTANT: This collection doesn't currently support paging or searching, so the returned
 // `page` will always be 1 and `size` and `total` will always be the total number of available regions
 // of the provider.
@@ -86,6 +86,13 @@ func (r *KeyRingsInquirySearchRequest) Header(name string, value interface{}) *K
 	return r
 }
 
+// Impersonate wraps requests on behalf of another user.
+// Note: Services that do not support this feature may silently ignore this call.
+func (r *KeyRingsInquirySearchRequest) Impersonate(user string) *KeyRingsInquirySearchRequest {
+	helpers.AddImpersonationHeader(&r.header, user)
+	return r
+}
+
 // Body sets the value of the 'body' parameter.
 //
 // Cloud provider data needed for the inquiry
@@ -107,7 +114,7 @@ func (r *KeyRingsInquirySearchRequest) Page(value int) *KeyRingsInquirySearchReq
 //
 // Number of items that will be contained in the returned page. As this collection
 // doesn't support paging or searching the result will always be the total number of
-// regions of the provider.
+// key rings of the provider.
 func (r *KeyRingsInquirySearchRequest) Size(value int) *KeyRingsInquirySearchRequest {
 	r.size = &value
 	return r
@@ -157,29 +164,25 @@ func (r *KeyRingsInquirySearchRequest) SendContext(ctx context.Context) (result 
 	result = &KeyRingsInquirySearchResponse{}
 	result.status = response.StatusCode
 	result.header = response.Header
+	reader := bufio.NewReader(response.Body)
+	_, err = reader.Peek(1)
+	if err == io.EOF {
+		err = nil
+		return
+	}
 	if result.status >= 400 {
-		result.err, err = errors.UnmarshalError(response.Body)
+		result.err, err = errors.UnmarshalErrorStatus(reader, result.status)
 		if err != nil {
 			return
 		}
 		err = result.err
 		return
 	}
-	err = readKeyRingsInquirySearchResponse(result, response.Body)
+	err = readKeyRingsInquirySearchResponse(result, reader)
 	if err != nil {
 		return
 	}
 	return
-}
-
-// marshall is the method used internally to marshal requests for the
-// 'search' method.
-func (r *KeyRingsInquirySearchRequest) marshal(writer io.Writer) error {
-	stream := helpers.NewStream(writer)
-	r.stream(stream)
-	return stream.Error
-}
-func (r *KeyRingsInquirySearchRequest) stream(stream *jsoniter.Stream) {
 }
 
 // KeyRingsInquirySearchResponse is the response for the 'search' method.
@@ -267,7 +270,7 @@ func (r *KeyRingsInquirySearchResponse) GetPage() (value int, ok bool) {
 //
 // Number of items that will be contained in the returned page. As this collection
 // doesn't support paging or searching the result will always be the total number of
-// regions of the provider.
+// key rings of the provider.
 func (r *KeyRingsInquirySearchResponse) Size() int {
 	if r != nil && r.size != nil {
 		return *r.size
@@ -280,7 +283,7 @@ func (r *KeyRingsInquirySearchResponse) Size() int {
 //
 // Number of items that will be contained in the returned page. As this collection
 // doesn't support paging or searching the result will always be the total number of
-// regions of the provider.
+// key rings of the provider.
 func (r *KeyRingsInquirySearchResponse) GetSize() (value int, ok bool) {
 	ok = r != nil && r.size != nil
 	if ok {
@@ -293,7 +296,7 @@ func (r *KeyRingsInquirySearchResponse) GetSize() (value int, ok bool) {
 //
 // Total number of items of the collection that match the search criteria,
 // regardless of the size of the page. As this collection doesn't support paging or
-// searching the result will always be the total number of available regions of the provider.
+// searching the result will always be the total number of available key rings of the provider.
 func (r *KeyRingsInquirySearchResponse) Total() int {
 	if r != nil && r.total != nil {
 		return *r.total
@@ -306,7 +309,7 @@ func (r *KeyRingsInquirySearchResponse) Total() int {
 //
 // Total number of items of the collection that match the search criteria,
 // regardless of the size of the page. As this collection doesn't support paging or
-// searching the result will always be the total number of available regions of the provider.
+// searching the result will always be the total number of available key rings of the provider.
 func (r *KeyRingsInquirySearchResponse) GetTotal() (value int, ok bool) {
 	ok = r != nil && r.total != nil
 	if ok {

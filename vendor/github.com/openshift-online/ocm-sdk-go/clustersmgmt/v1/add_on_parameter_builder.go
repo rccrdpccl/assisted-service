@@ -23,19 +23,20 @@ package v1 // github.com/openshift-online/ocm-sdk-go/clustersmgmt/v1
 //
 // Representation of an add-on parameter.
 type AddOnParameterBuilder struct {
-	bitmap_      uint32
-	id           string
-	href         string
-	addon        *AddOnBuilder
-	defaultValue string
-	description  string
-	name         string
-	options      []*AddOnParameterOptionBuilder
-	validation   string
-	valueType    string
-	editable     bool
-	enabled      bool
-	required     bool
+	bitmap_          uint32
+	id               string
+	href             string
+	addon            *AddOnBuilder
+	defaultValue     string
+	description      string
+	name             string
+	options          []*AddOnParameterOptionBuilder
+	validation       string
+	validationErrMsg string
+	valueType        string
+	editable         bool
+	enabled          bool
+	required         bool
 }
 
 // NewAddOnParameter creates a new builder of 'add_on_parameter' objects.
@@ -61,6 +62,11 @@ func (b *AddOnParameterBuilder) HREF(value string) *AddOnParameterBuilder {
 	b.href = value
 	b.bitmap_ |= 4
 	return b
+}
+
+// Empty returns true if the builder is empty, i.e. no attribute has a value.
+func (b *AddOnParameterBuilder) Empty() bool {
+	return b == nil || b.bitmap_&^1 == 0
 }
 
 // Addon sets the value of the 'addon' attribute to the given value.
@@ -149,12 +155,21 @@ func (b *AddOnParameterBuilder) Validation(value string) *AddOnParameterBuilder 
 	return b
 }
 
+// ValidationErrMsg sets the value of the 'validation_err_msg' attribute to the given value.
+//
+//
+func (b *AddOnParameterBuilder) ValidationErrMsg(value string) *AddOnParameterBuilder {
+	b.validationErrMsg = value
+	b.bitmap_ |= 4096
+	return b
+}
+
 // ValueType sets the value of the 'value_type' attribute to the given value.
 //
 //
 func (b *AddOnParameterBuilder) ValueType(value string) *AddOnParameterBuilder {
 	b.valueType = value
-	b.bitmap_ |= 4096
+	b.bitmap_ |= 8192
 	return b
 }
 
@@ -186,6 +201,7 @@ func (b *AddOnParameterBuilder) Copy(object *AddOnParameter) *AddOnParameterBuil
 	}
 	b.required = object.required
 	b.validation = object.validation
+	b.validationErrMsg = object.validationErrMsg
 	b.valueType = object.valueType
 	return b
 }
@@ -218,6 +234,7 @@ func (b *AddOnParameterBuilder) Build() (object *AddOnParameter, err error) {
 	}
 	object.required = b.required
 	object.validation = b.validation
+	object.validationErrMsg = b.validationErrMsg
 	object.valueType = b.valueType
 	return
 }

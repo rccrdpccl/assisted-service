@@ -38,6 +38,8 @@ type AccountBuilder struct {
 	labels         []*LabelBuilder
 	lastName       string
 	organization   *OrganizationBuilder
+	rhitAccountID  string
+	rhitWebUserId  string
 	updatedAt      time.Time
 	username       string
 	banned         bool
@@ -67,6 +69,11 @@ func (b *AccountBuilder) HREF(value string) *AccountBuilder {
 	b.href = value
 	b.bitmap_ |= 4
 	return b
+}
+
+// Empty returns true if the builder is empty, i.e. no attribute has a value.
+func (b *AccountBuilder) Empty() bool {
+	return b == nil || b.bitmap_&^1 == 0
 }
 
 // BanCode sets the value of the 'ban_code' attribute to the given value.
@@ -155,12 +162,30 @@ func (b *AccountBuilder) Organization(value *OrganizationBuilder) *AccountBuilde
 	return b
 }
 
+// RhitAccountID sets the value of the 'rhit_account_ID' attribute to the given value.
+//
+//
+func (b *AccountBuilder) RhitAccountID(value string) *AccountBuilder {
+	b.rhitAccountID = value
+	b.bitmap_ |= 4096
+	return b
+}
+
+// RhitWebUserId sets the value of the 'rhit_web_user_id' attribute to the given value.
+//
+//
+func (b *AccountBuilder) RhitWebUserId(value string) *AccountBuilder {
+	b.rhitWebUserId = value
+	b.bitmap_ |= 8192
+	return b
+}
+
 // ServiceAccount sets the value of the 'service_account' attribute to the given value.
 //
 //
 func (b *AccountBuilder) ServiceAccount(value bool) *AccountBuilder {
 	b.serviceAccount = value
-	b.bitmap_ |= 4096
+	b.bitmap_ |= 16384
 	return b
 }
 
@@ -169,7 +194,7 @@ func (b *AccountBuilder) ServiceAccount(value bool) *AccountBuilder {
 //
 func (b *AccountBuilder) UpdatedAt(value time.Time) *AccountBuilder {
 	b.updatedAt = value
-	b.bitmap_ |= 8192
+	b.bitmap_ |= 32768
 	return b
 }
 
@@ -178,7 +203,7 @@ func (b *AccountBuilder) UpdatedAt(value time.Time) *AccountBuilder {
 //
 func (b *AccountBuilder) Username(value string) *AccountBuilder {
 	b.username = value
-	b.bitmap_ |= 16384
+	b.bitmap_ |= 65536
 	return b
 }
 
@@ -210,6 +235,8 @@ func (b *AccountBuilder) Copy(object *Account) *AccountBuilder {
 	} else {
 		b.organization = nil
 	}
+	b.rhitAccountID = object.rhitAccountID
+	b.rhitWebUserId = object.rhitWebUserId
 	b.serviceAccount = object.serviceAccount
 	b.updatedAt = object.updatedAt
 	b.username = object.username
@@ -244,6 +271,8 @@ func (b *AccountBuilder) Build() (object *Account, err error) {
 			return
 		}
 	}
+	object.rhitAccountID = b.rhitAccountID
+	object.rhitWebUserId = b.rhitWebUserId
 	object.serviceAccount = b.serviceAccount
 	object.updatedAt = b.updatedAt
 	object.username = b.username
