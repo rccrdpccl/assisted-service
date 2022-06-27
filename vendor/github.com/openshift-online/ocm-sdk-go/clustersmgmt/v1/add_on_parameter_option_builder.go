@@ -23,14 +23,20 @@ package v1 // github.com/openshift-online/ocm-sdk-go/clustersmgmt/v1
 //
 // Representation of an add-on parameter option.
 type AddOnParameterOptionBuilder struct {
-	bitmap_ uint32
-	name    string
-	value   string
+	bitmap_      uint32
+	name         string
+	requirements []*AddOnRequirementBuilder
+	value        string
 }
 
 // NewAddOnParameterOption creates a new builder of 'add_on_parameter_option' objects.
 func NewAddOnParameterOption() *AddOnParameterOptionBuilder {
 	return &AddOnParameterOptionBuilder{}
+}
+
+// Empty returns true if the builder is empty, i.e. no attribute has a value.
+func (b *AddOnParameterOptionBuilder) Empty() bool {
+	return b == nil || b.bitmap_ == 0
 }
 
 // Name sets the value of the 'name' attribute to the given value.
@@ -42,12 +48,22 @@ func (b *AddOnParameterOptionBuilder) Name(value string) *AddOnParameterOptionBu
 	return b
 }
 
+// Requirements sets the value of the 'requirements' attribute to the given values.
+//
+//
+func (b *AddOnParameterOptionBuilder) Requirements(values ...*AddOnRequirementBuilder) *AddOnParameterOptionBuilder {
+	b.requirements = make([]*AddOnRequirementBuilder, len(values))
+	copy(b.requirements, values)
+	b.bitmap_ |= 2
+	return b
+}
+
 // Value sets the value of the 'value' attribute to the given value.
 //
 //
 func (b *AddOnParameterOptionBuilder) Value(value string) *AddOnParameterOptionBuilder {
 	b.value = value
-	b.bitmap_ |= 2
+	b.bitmap_ |= 4
 	return b
 }
 
@@ -58,6 +74,14 @@ func (b *AddOnParameterOptionBuilder) Copy(object *AddOnParameterOption) *AddOnP
 	}
 	b.bitmap_ = object.bitmap_
 	b.name = object.name
+	if object.requirements != nil {
+		b.requirements = make([]*AddOnRequirementBuilder, len(object.requirements))
+		for i, v := range object.requirements {
+			b.requirements[i] = NewAddOnRequirement().Copy(v)
+		}
+	} else {
+		b.requirements = nil
+	}
 	b.value = object.value
 	return b
 }
@@ -67,6 +91,15 @@ func (b *AddOnParameterOptionBuilder) Build() (object *AddOnParameterOption, err
 	object = new(AddOnParameterOption)
 	object.bitmap_ = b.bitmap_
 	object.name = b.name
+	if b.requirements != nil {
+		object.requirements = make([]*AddOnRequirement, len(b.requirements))
+		for i, v := range b.requirements {
+			object.requirements[i], err = v.Build()
+			if err != nil {
+				return
+			}
+		}
+	}
 	object.value = b.value
 	return
 }

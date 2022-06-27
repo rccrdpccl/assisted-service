@@ -21,7 +21,6 @@ package v1 // github.com/openshift-online/ocm-sdk-go/clustersmgmt/v1
 
 import (
 	"io"
-	"net/http"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/openshift-online/ocm-sdk-go/helpers"
@@ -31,7 +30,10 @@ import (
 func MarshalAdminCredentials(object *AdminCredentials, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeAdminCredentials(object, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -56,7 +58,6 @@ func writeAdminCredentials(object *AdminCredentials, stream *jsoniter.Stream) {
 		}
 		stream.WriteObjectField("user")
 		stream.WriteString(object.user)
-		count++
 	}
 	stream.WriteObjectEnd()
 }
@@ -64,9 +65,6 @@ func writeAdminCredentials(object *AdminCredentials, stream *jsoniter.Stream) {
 // UnmarshalAdminCredentials reads a value of the 'admin_credentials' type from the given
 // source, which can be an slice of bytes, a string or a reader.
 func UnmarshalAdminCredentials(source interface{}) (object *AdminCredentials, err error) {
-	if source == http.NoBody {
-		return
-	}
 	iterator, err := helpers.NewIterator(source)
 	if err != nil {
 		return
