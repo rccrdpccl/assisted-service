@@ -21,7 +21,6 @@ package v1 // github.com/openshift-online/ocm-sdk-go/clustersmgmt/v1
 
 import (
 	"io"
-	"net/http"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/openshift-online/ocm-sdk-go/helpers"
@@ -31,7 +30,10 @@ import (
 func MarshalGCPFlavour(object *GCPFlavour, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeGCPFlavour(object, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -65,7 +67,6 @@ func writeGCPFlavour(object *GCPFlavour, stream *jsoniter.Stream) {
 		}
 		stream.WriteObjectField("master_instance_type")
 		stream.WriteString(object.masterInstanceType)
-		count++
 	}
 	stream.WriteObjectEnd()
 }
@@ -73,9 +74,6 @@ func writeGCPFlavour(object *GCPFlavour, stream *jsoniter.Stream) {
 // UnmarshalGCPFlavour reads a value of the 'GCP_flavour' type from the given
 // source, which can be an slice of bytes, a string or a reader.
 func UnmarshalGCPFlavour(source interface{}) (object *GCPFlavour, err error) {
-	if source == http.NoBody {
-		return
-	}
 	iterator, err := helpers.NewIterator(source)
 	if err != nil {
 		return

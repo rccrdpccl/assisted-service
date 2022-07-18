@@ -21,7 +21,6 @@ package v1 // github.com/openshift-online/ocm-sdk-go/clustersmgmt/v1
 
 import (
 	"io"
-	"net/http"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/openshift-online/ocm-sdk-go/helpers"
@@ -31,7 +30,10 @@ import (
 func MarshalMachinePoolAutoscaling(object *MachinePoolAutoscaling, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeMachinePoolAutoscaling(object, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -79,7 +81,6 @@ func writeMachinePoolAutoscaling(object *MachinePoolAutoscaling, stream *jsonite
 		}
 		stream.WriteObjectField("min_replicas")
 		stream.WriteInt(object.minReplicas)
-		count++
 	}
 	stream.WriteObjectEnd()
 }
@@ -87,9 +88,6 @@ func writeMachinePoolAutoscaling(object *MachinePoolAutoscaling, stream *jsonite
 // UnmarshalMachinePoolAutoscaling reads a value of the 'machine_pool_autoscaling' type from the given
 // source, which can be an slice of bytes, a string or a reader.
 func UnmarshalMachinePoolAutoscaling(source interface{}) (object *MachinePoolAutoscaling, err error) {
-	if source == http.NoBody {
-		return
-	}
 	iterator, err := helpers.NewIterator(source)
 	if err != nil {
 		return

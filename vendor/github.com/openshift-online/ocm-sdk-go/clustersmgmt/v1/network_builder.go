@@ -28,11 +28,17 @@ type NetworkBuilder struct {
 	machineCIDR string
 	podCIDR     string
 	serviceCIDR string
+	type_       string
 }
 
 // NewNetwork creates a new builder of 'network' objects.
 func NewNetwork() *NetworkBuilder {
 	return &NetworkBuilder{}
+}
+
+// Empty returns true if the builder is empty, i.e. no attribute has a value.
+func (b *NetworkBuilder) Empty() bool {
+	return b == nil || b.bitmap_ == 0
 }
 
 // HostPrefix sets the value of the 'host_prefix' attribute to the given value.
@@ -71,6 +77,15 @@ func (b *NetworkBuilder) ServiceCIDR(value string) *NetworkBuilder {
 	return b
 }
 
+// Type sets the value of the 'type' attribute to the given value.
+//
+//
+func (b *NetworkBuilder) Type(value string) *NetworkBuilder {
+	b.type_ = value
+	b.bitmap_ |= 16
+	return b
+}
+
 // Copy copies the attributes of the given object into this builder, discarding any previous values.
 func (b *NetworkBuilder) Copy(object *Network) *NetworkBuilder {
 	if object == nil {
@@ -81,6 +96,7 @@ func (b *NetworkBuilder) Copy(object *Network) *NetworkBuilder {
 	b.machineCIDR = object.machineCIDR
 	b.podCIDR = object.podCIDR
 	b.serviceCIDR = object.serviceCIDR
+	b.type_ = object.type_
 	return b
 }
 
@@ -92,5 +108,6 @@ func (b *NetworkBuilder) Build() (object *Network, err error) {
 	object.machineCIDR = b.machineCIDR
 	object.podCIDR = b.podCIDR
 	object.serviceCIDR = b.serviceCIDR
+	object.type_ = b.type_
 	return
 }
