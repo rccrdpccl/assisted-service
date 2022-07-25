@@ -21,7 +21,6 @@ package v1 // github.com/openshift-online/ocm-sdk-go/clustersmgmt/v1
 
 import (
 	"io"
-	"net/http"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/openshift-online/ocm-sdk-go/helpers"
@@ -31,7 +30,10 @@ import (
 func MarshalOpenIDClaims(object *OpenIDClaims, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeOpenIDClaims(object, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -49,7 +51,16 @@ func writeOpenIDClaims(object *OpenIDClaims, stream *jsoniter.Stream) {
 		writeStringList(object.email, stream)
 		count++
 	}
-	present_ = object.bitmap_&2 != 0 && object.name != nil
+	present_ = object.bitmap_&2 != 0 && object.groups != nil
+	if present_ {
+		if count > 0 {
+			stream.WriteMore()
+		}
+		stream.WriteObjectField("groups")
+		writeStringList(object.groups, stream)
+		count++
+	}
+	present_ = object.bitmap_&4 != 0 && object.name != nil
 	if present_ {
 		if count > 0 {
 			stream.WriteMore()
@@ -58,14 +69,13 @@ func writeOpenIDClaims(object *OpenIDClaims, stream *jsoniter.Stream) {
 		writeStringList(object.name, stream)
 		count++
 	}
-	present_ = object.bitmap_&4 != 0 && object.preferredUsername != nil
+	present_ = object.bitmap_&8 != 0 && object.preferredUsername != nil
 	if present_ {
 		if count > 0 {
 			stream.WriteMore()
 		}
 		stream.WriteObjectField("preferred_username")
 		writeStringList(object.preferredUsername, stream)
-		count++
 	}
 	stream.WriteObjectEnd()
 }
@@ -73,9 +83,6 @@ func writeOpenIDClaims(object *OpenIDClaims, stream *jsoniter.Stream) {
 // UnmarshalOpenIDClaims reads a value of the 'open_ID_claims' type from the given
 // source, which can be an slice of bytes, a string or a reader.
 func UnmarshalOpenIDClaims(source interface{}) (object *OpenIDClaims, err error) {
-	if source == http.NoBody {
-		return
-	}
 	iterator, err := helpers.NewIterator(source)
 	if err != nil {
 		return
@@ -98,14 +105,18 @@ func readOpenIDClaims(iterator *jsoniter.Iterator) *OpenIDClaims {
 			value := readStringList(iterator)
 			object.email = value
 			object.bitmap_ |= 1
+		case "groups":
+			value := readStringList(iterator)
+			object.groups = value
+			object.bitmap_ |= 2
 		case "name":
 			value := readStringList(iterator)
 			object.name = value
-			object.bitmap_ |= 2
+			object.bitmap_ |= 4
 		case "preferred_username":
 			value := readStringList(iterator)
 			object.preferredUsername = value
-			object.bitmap_ |= 4
+			object.bitmap_ |= 8
 		default:
 			iterator.ReadAny()
 		}

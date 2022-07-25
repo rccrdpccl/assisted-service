@@ -20,6 +20,7 @@ limitations under the License.
 package v1 // github.com/openshift-online/ocm-sdk-go/accountsmgmt/v1
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"io"
@@ -28,7 +29,6 @@ import (
 	"net/url"
 	"path"
 
-	jsoniter "github.com/json-iterator/go"
 	"github.com/openshift-online/ocm-sdk-go/errors"
 	"github.com/openshift-online/ocm-sdk-go/helpers"
 )
@@ -119,6 +119,13 @@ func (r *SubscriptionsListRequest) Header(name string, value interface{}) *Subsc
 	return r
 }
 
+// Impersonate wraps requests on behalf of another user.
+// Note: Services that do not support this feature may silently ignore this call.
+func (r *SubscriptionsListRequest) Impersonate(user string) *SubscriptionsListRequest {
+	helpers.AddImpersonationHeader(&r.header, user)
+	return r
+}
+
 // FetchaccountsAccounts sets the value of the 'fetchaccounts_accounts' parameter.
 //
 // If true, includes the account reference information in the output. Could slow request response time.
@@ -170,10 +177,9 @@ func (r *SubscriptionsListRequest) Labels(value string) *SubscriptionsListReques
 // a SQL statement. For example, in order to sort the
 // subscriptions descending by name identifier the value should be:
 //
-// [source,sql]
-// ----
+// ```sql
 // name desc
-// ----
+// ```
 //
 // If the parameter isn't provided, or if the value is empty, then the order of the
 // results is undefined.
@@ -199,10 +205,9 @@ func (r *SubscriptionsListRequest) Page(value int) *SubscriptionsListRequest {
 // of the names of the columns of a table. For example, in order to retrieve all the
 // subscriptions for managed clusters the value should be:
 //
-// [source,sql]
-// ----
+// ```sql
 // managed = 't'
-// ----
+// ```
 //
 // If the parameter isn't provided, or if the value is empty, then all the
 // clusters that the user has permission to see will be returned.
@@ -275,15 +280,21 @@ func (r *SubscriptionsListRequest) SendContext(ctx context.Context) (result *Sub
 	result = &SubscriptionsListResponse{}
 	result.status = response.StatusCode
 	result.header = response.Header
+	reader := bufio.NewReader(response.Body)
+	_, err = reader.Peek(1)
+	if err == io.EOF {
+		err = nil
+		return
+	}
 	if result.status >= 400 {
-		result.err, err = errors.UnmarshalError(response.Body)
+		result.err, err = errors.UnmarshalErrorStatus(reader, result.status)
 		if err != nil {
 			return
 		}
 		err = result.err
 		return
 	}
-	err = readSubscriptionsListResponse(result, response.Body)
+	err = readSubscriptionsListResponse(result, reader)
 	if err != nil {
 		return
 	}
@@ -436,6 +447,13 @@ func (r *SubscriptionsPostRequest) Header(name string, value interface{}) *Subsc
 	return r
 }
 
+// Impersonate wraps requests on behalf of another user.
+// Note: Services that do not support this feature may silently ignore this call.
+func (r *SubscriptionsPostRequest) Impersonate(user string) *SubscriptionsPostRequest {
+	helpers.AddImpersonationHeader(&r.header, user)
+	return r
+}
+
 // Request sets the value of the 'request' parameter.
 //
 //
@@ -482,29 +500,25 @@ func (r *SubscriptionsPostRequest) SendContext(ctx context.Context) (result *Sub
 	result = &SubscriptionsPostResponse{}
 	result.status = response.StatusCode
 	result.header = response.Header
+	reader := bufio.NewReader(response.Body)
+	_, err = reader.Peek(1)
+	if err == io.EOF {
+		err = nil
+		return
+	}
 	if result.status >= 400 {
-		result.err, err = errors.UnmarshalError(response.Body)
+		result.err, err = errors.UnmarshalErrorStatus(reader, result.status)
 		if err != nil {
 			return
 		}
 		err = result.err
 		return
 	}
-	err = readSubscriptionsPostResponse(result, response.Body)
+	err = readSubscriptionsPostResponse(result, reader)
 	if err != nil {
 		return
 	}
 	return
-}
-
-// marshall is the method used internally to marshal requests for the
-// 'post' method.
-func (r *SubscriptionsPostRequest) marshal(writer io.Writer) error {
-	stream := helpers.NewStream(writer)
-	r.stream(stream)
-	return stream.Error
-}
-func (r *SubscriptionsPostRequest) stream(stream *jsoniter.Stream) {
 }
 
 // SubscriptionsPostResponse is the response for the 'post' method.
