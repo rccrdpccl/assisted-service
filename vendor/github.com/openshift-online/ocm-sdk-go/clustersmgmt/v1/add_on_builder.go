@@ -26,6 +26,8 @@ type AddOnBuilder struct {
 	bitmap_              uint32
 	id                   string
 	href                 string
+	config               *AddOnConfigBuilder
+	credentialsRequests  []*CredentialRequestBuilder
 	description          string
 	docsLink             string
 	icon                 string
@@ -39,9 +41,11 @@ type AddOnBuilder struct {
 	resourceName         string
 	subOperators         []*AddOnSubOperatorBuilder
 	targetNamespace      string
+	version              *AddOnVersionBuilder
 	enabled              bool
 	hasExternalResources bool
 	hidden               bool
+	managedService       bool
 }
 
 // NewAddOn creates a new builder of 'add_on' objects.
@@ -69,12 +73,41 @@ func (b *AddOnBuilder) HREF(value string) *AddOnBuilder {
 	return b
 }
 
+// Empty returns true if the builder is empty, i.e. no attribute has a value.
+func (b *AddOnBuilder) Empty() bool {
+	return b == nil || b.bitmap_&^1 == 0
+}
+
+// Config sets the value of the 'config' attribute to the given value.
+//
+// Representation of an add-on config.
+// The attributes under it are to be used by the addon once its installed in the cluster.
+func (b *AddOnBuilder) Config(value *AddOnConfigBuilder) *AddOnBuilder {
+	b.config = value
+	if value != nil {
+		b.bitmap_ |= 8
+	} else {
+		b.bitmap_ &^= 8
+	}
+	return b
+}
+
+// CredentialsRequests sets the value of the 'credentials_requests' attribute to the given values.
+//
+//
+func (b *AddOnBuilder) CredentialsRequests(values ...*CredentialRequestBuilder) *AddOnBuilder {
+	b.credentialsRequests = make([]*CredentialRequestBuilder, len(values))
+	copy(b.credentialsRequests, values)
+	b.bitmap_ |= 16
+	return b
+}
+
 // Description sets the value of the 'description' attribute to the given value.
 //
 //
 func (b *AddOnBuilder) Description(value string) *AddOnBuilder {
 	b.description = value
-	b.bitmap_ |= 8
+	b.bitmap_ |= 32
 	return b
 }
 
@@ -83,7 +116,7 @@ func (b *AddOnBuilder) Description(value string) *AddOnBuilder {
 //
 func (b *AddOnBuilder) DocsLink(value string) *AddOnBuilder {
 	b.docsLink = value
-	b.bitmap_ |= 16
+	b.bitmap_ |= 64
 	return b
 }
 
@@ -92,7 +125,7 @@ func (b *AddOnBuilder) DocsLink(value string) *AddOnBuilder {
 //
 func (b *AddOnBuilder) Enabled(value bool) *AddOnBuilder {
 	b.enabled = value
-	b.bitmap_ |= 32
+	b.bitmap_ |= 128
 	return b
 }
 
@@ -101,7 +134,7 @@ func (b *AddOnBuilder) Enabled(value bool) *AddOnBuilder {
 //
 func (b *AddOnBuilder) HasExternalResources(value bool) *AddOnBuilder {
 	b.hasExternalResources = value
-	b.bitmap_ |= 64
+	b.bitmap_ |= 256
 	return b
 }
 
@@ -110,7 +143,7 @@ func (b *AddOnBuilder) HasExternalResources(value bool) *AddOnBuilder {
 //
 func (b *AddOnBuilder) Hidden(value bool) *AddOnBuilder {
 	b.hidden = value
-	b.bitmap_ |= 128
+	b.bitmap_ |= 512
 	return b
 }
 
@@ -119,7 +152,7 @@ func (b *AddOnBuilder) Hidden(value bool) *AddOnBuilder {
 //
 func (b *AddOnBuilder) Icon(value string) *AddOnBuilder {
 	b.icon = value
-	b.bitmap_ |= 256
+	b.bitmap_ |= 1024
 	return b
 }
 
@@ -128,7 +161,7 @@ func (b *AddOnBuilder) Icon(value string) *AddOnBuilder {
 // Representation of an add-on InstallMode field.
 func (b *AddOnBuilder) InstallMode(value AddOnInstallMode) *AddOnBuilder {
 	b.installMode = value
-	b.bitmap_ |= 512
+	b.bitmap_ |= 2048
 	return b
 }
 
@@ -137,7 +170,16 @@ func (b *AddOnBuilder) InstallMode(value AddOnInstallMode) *AddOnBuilder {
 //
 func (b *AddOnBuilder) Label(value string) *AddOnBuilder {
 	b.label = value
-	b.bitmap_ |= 1024
+	b.bitmap_ |= 4096
+	return b
+}
+
+// ManagedService sets the value of the 'managed_service' attribute to the given value.
+//
+//
+func (b *AddOnBuilder) ManagedService(value bool) *AddOnBuilder {
+	b.managedService = value
+	b.bitmap_ |= 8192
 	return b
 }
 
@@ -146,7 +188,7 @@ func (b *AddOnBuilder) Label(value string) *AddOnBuilder {
 //
 func (b *AddOnBuilder) Name(value string) *AddOnBuilder {
 	b.name = value
-	b.bitmap_ |= 2048
+	b.bitmap_ |= 16384
 	return b
 }
 
@@ -155,7 +197,7 @@ func (b *AddOnBuilder) Name(value string) *AddOnBuilder {
 //
 func (b *AddOnBuilder) OperatorName(value string) *AddOnBuilder {
 	b.operatorName = value
-	b.bitmap_ |= 4096
+	b.bitmap_ |= 32768
 	return b
 }
 
@@ -164,7 +206,7 @@ func (b *AddOnBuilder) OperatorName(value string) *AddOnBuilder {
 //
 func (b *AddOnBuilder) Parameters(value *AddOnParameterListBuilder) *AddOnBuilder {
 	b.parameters = value
-	b.bitmap_ |= 8192
+	b.bitmap_ |= 65536
 	return b
 }
 
@@ -174,7 +216,7 @@ func (b *AddOnBuilder) Parameters(value *AddOnParameterListBuilder) *AddOnBuilde
 func (b *AddOnBuilder) Requirements(values ...*AddOnRequirementBuilder) *AddOnBuilder {
 	b.requirements = make([]*AddOnRequirementBuilder, len(values))
 	copy(b.requirements, values)
-	b.bitmap_ |= 16384
+	b.bitmap_ |= 131072
 	return b
 }
 
@@ -183,7 +225,7 @@ func (b *AddOnBuilder) Requirements(values ...*AddOnRequirementBuilder) *AddOnBu
 //
 func (b *AddOnBuilder) ResourceCost(value float64) *AddOnBuilder {
 	b.resourceCost = value
-	b.bitmap_ |= 32768
+	b.bitmap_ |= 262144
 	return b
 }
 
@@ -192,7 +234,7 @@ func (b *AddOnBuilder) ResourceCost(value float64) *AddOnBuilder {
 //
 func (b *AddOnBuilder) ResourceName(value string) *AddOnBuilder {
 	b.resourceName = value
-	b.bitmap_ |= 65536
+	b.bitmap_ |= 524288
 	return b
 }
 
@@ -202,7 +244,7 @@ func (b *AddOnBuilder) ResourceName(value string) *AddOnBuilder {
 func (b *AddOnBuilder) SubOperators(values ...*AddOnSubOperatorBuilder) *AddOnBuilder {
 	b.subOperators = make([]*AddOnSubOperatorBuilder, len(values))
 	copy(b.subOperators, values)
-	b.bitmap_ |= 131072
+	b.bitmap_ |= 1048576
 	return b
 }
 
@@ -211,7 +253,20 @@ func (b *AddOnBuilder) SubOperators(values ...*AddOnSubOperatorBuilder) *AddOnBu
 //
 func (b *AddOnBuilder) TargetNamespace(value string) *AddOnBuilder {
 	b.targetNamespace = value
-	b.bitmap_ |= 262144
+	b.bitmap_ |= 2097152
+	return b
+}
+
+// Version sets the value of the 'version' attribute to the given value.
+//
+// Representation of an add-on version.
+func (b *AddOnBuilder) Version(value *AddOnVersionBuilder) *AddOnBuilder {
+	b.version = value
+	if value != nil {
+		b.bitmap_ |= 4194304
+	} else {
+		b.bitmap_ &^= 4194304
+	}
 	return b
 }
 
@@ -223,6 +278,19 @@ func (b *AddOnBuilder) Copy(object *AddOn) *AddOnBuilder {
 	b.bitmap_ = object.bitmap_
 	b.id = object.id
 	b.href = object.href
+	if object.config != nil {
+		b.config = NewAddOnConfig().Copy(object.config)
+	} else {
+		b.config = nil
+	}
+	if object.credentialsRequests != nil {
+		b.credentialsRequests = make([]*CredentialRequestBuilder, len(object.credentialsRequests))
+		for i, v := range object.credentialsRequests {
+			b.credentialsRequests[i] = NewCredentialRequest().Copy(v)
+		}
+	} else {
+		b.credentialsRequests = nil
+	}
 	b.description = object.description
 	b.docsLink = object.docsLink
 	b.enabled = object.enabled
@@ -231,6 +299,7 @@ func (b *AddOnBuilder) Copy(object *AddOn) *AddOnBuilder {
 	b.icon = object.icon
 	b.installMode = object.installMode
 	b.label = object.label
+	b.managedService = object.managedService
 	b.name = object.name
 	b.operatorName = object.operatorName
 	if object.parameters != nil {
@@ -257,6 +326,11 @@ func (b *AddOnBuilder) Copy(object *AddOn) *AddOnBuilder {
 		b.subOperators = nil
 	}
 	b.targetNamespace = object.targetNamespace
+	if object.version != nil {
+		b.version = NewAddOnVersion().Copy(object.version)
+	} else {
+		b.version = nil
+	}
 	return b
 }
 
@@ -266,6 +340,21 @@ func (b *AddOnBuilder) Build() (object *AddOn, err error) {
 	object.id = b.id
 	object.href = b.href
 	object.bitmap_ = b.bitmap_
+	if b.config != nil {
+		object.config, err = b.config.Build()
+		if err != nil {
+			return
+		}
+	}
+	if b.credentialsRequests != nil {
+		object.credentialsRequests = make([]*CredentialRequest, len(b.credentialsRequests))
+		for i, v := range b.credentialsRequests {
+			object.credentialsRequests[i], err = v.Build()
+			if err != nil {
+				return
+			}
+		}
+	}
 	object.description = b.description
 	object.docsLink = b.docsLink
 	object.enabled = b.enabled
@@ -274,6 +363,7 @@ func (b *AddOnBuilder) Build() (object *AddOn, err error) {
 	object.icon = b.icon
 	object.installMode = b.installMode
 	object.label = b.label
+	object.managedService = b.managedService
 	object.name = b.name
 	object.operatorName = b.operatorName
 	if b.parameters != nil {
@@ -303,5 +393,11 @@ func (b *AddOnBuilder) Build() (object *AddOn, err error) {
 		}
 	}
 	object.targetNamespace = b.targetNamespace
+	if b.version != nil {
+		object.version, err = b.version.Build()
+		if err != nil {
+			return
+		}
+	}
 	return
 }

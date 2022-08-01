@@ -25,11 +25,13 @@ type ClusterState string
 const (
 	// Error during installation.
 	ClusterStateError ClusterState = "error"
+	// The cluster is installed and being prepared for use.
+	ClusterStateFinalizingInstallation ClusterState = "finalizing_installation"
 	// The cluster will consume marginal cloud provider infrastructure but will be counted for quota.
 	ClusterStateHibernating ClusterState = "hibernating"
 	// The cluster is still being installed.
 	ClusterStateInstalling ClusterState = "installing"
-	// The cluster is waiting to be provisioned.
+	// The cluster is pending resources before being provisioned.
 	ClusterStatePending ClusterState = "pending"
 	// The cluster is moving from 'Ready' state to 'Hibernating'.
 	ClusterStatePoweringDown ClusterState = "powering_down"
@@ -41,4 +43,8 @@ const (
 	ClusterStateUninstalling ClusterState = "uninstalling"
 	// The state of the cluster is unknown.
 	ClusterStateUnknown ClusterState = "unknown"
+	// The cluster is validating user input.
+	ClusterStateValidating ClusterState = "validating"
+	// The cluster is waiting for user action.
+	ClusterStateWaiting ClusterState = "waiting"
 )

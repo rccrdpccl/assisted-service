@@ -23,17 +23,19 @@ package v1 // github.com/openshift-online/ocm-sdk-go/clustersmgmt/v1
 //
 // Representation of a machine pool in a cluster.
 type MachinePoolBuilder struct {
-	bitmap_           uint32
-	id                string
-	href              string
-	aws               *AWSMachinePoolBuilder
-	autoscaling       *MachinePoolAutoscalingBuilder
-	availabilityZones []string
-	cluster           *ClusterBuilder
-	instanceType      string
-	labels            map[string]string
-	replicas          int
-	taints            []*TaintBuilder
+	bitmap_              uint32
+	id                   string
+	href                 string
+	aws                  *AWSMachinePoolBuilder
+	autoscaling          *MachinePoolAutoscalingBuilder
+	availabilityZones    []string
+	cluster              *ClusterBuilder
+	instanceType         string
+	labels               map[string]string
+	replicas             int
+	securityGroupFilters []*MachinePoolSecurityGroupFilterBuilder
+	subnets              []string
+	taints               []*TaintBuilder
 }
 
 // NewMachinePool creates a new builder of 'machine_pool' objects.
@@ -59,6 +61,11 @@ func (b *MachinePoolBuilder) HREF(value string) *MachinePoolBuilder {
 	b.href = value
 	b.bitmap_ |= 4
 	return b
+}
+
+// Empty returns true if the builder is empty, i.e. no attribute has a value.
+func (b *MachinePoolBuilder) Empty() bool {
+	return b == nil || b.bitmap_&^1 == 0
 }
 
 // AWS sets the value of the 'AWS' attribute to the given value.
@@ -105,8 +112,7 @@ func (b *MachinePoolBuilder) AvailabilityZones(values ...string) *MachinePoolBui
 // cluster is retrieved it will be a link to the cloud provider, containing only
 // the kind, id and href attributes:
 //
-// [source,json]
-// ----
+// ```json
 // {
 //   "cloud_provider": {
 //     "kind": "CloudProviderLink",
@@ -114,19 +120,18 @@ func (b *MachinePoolBuilder) AvailabilityZones(values ...string) *MachinePoolBui
 //     "href": "/api/clusters_mgmt/v1/cloud_providers/123"
 //   }
 // }
-// ----
+// ```
 //
 // When a cluster is created this is optional, and if used it should contain the
 // identifier of the cloud provider to use:
 //
-// [source,json]
-// ----
+// ```json
 // {
 //   "cloud_provider": {
 //     "id": "123",
 //   }
 // }
-// ----
+// ```
 //
 // If not included, then the cluster will be created using the default cloud
 // provider, which is currently Amazon Web Services.
@@ -177,13 +182,33 @@ func (b *MachinePoolBuilder) Replicas(value int) *MachinePoolBuilder {
 	return b
 }
 
+// SecurityGroupFilters sets the value of the 'security_group_filters' attribute to the given values.
+//
+//
+func (b *MachinePoolBuilder) SecurityGroupFilters(values ...*MachinePoolSecurityGroupFilterBuilder) *MachinePoolBuilder {
+	b.securityGroupFilters = make([]*MachinePoolSecurityGroupFilterBuilder, len(values))
+	copy(b.securityGroupFilters, values)
+	b.bitmap_ |= 1024
+	return b
+}
+
+// Subnets sets the value of the 'subnets' attribute to the given values.
+//
+//
+func (b *MachinePoolBuilder) Subnets(values ...string) *MachinePoolBuilder {
+	b.subnets = make([]string, len(values))
+	copy(b.subnets, values)
+	b.bitmap_ |= 2048
+	return b
+}
+
 // Taints sets the value of the 'taints' attribute to the given values.
 //
 //
 func (b *MachinePoolBuilder) Taints(values ...*TaintBuilder) *MachinePoolBuilder {
 	b.taints = make([]*TaintBuilder, len(values))
 	copy(b.taints, values)
-	b.bitmap_ |= 1024
+	b.bitmap_ |= 4096
 	return b
 }
 
@@ -226,6 +251,20 @@ func (b *MachinePoolBuilder) Copy(object *MachinePool) *MachinePoolBuilder {
 		b.labels = nil
 	}
 	b.replicas = object.replicas
+	if object.securityGroupFilters != nil {
+		b.securityGroupFilters = make([]*MachinePoolSecurityGroupFilterBuilder, len(object.securityGroupFilters))
+		for i, v := range object.securityGroupFilters {
+			b.securityGroupFilters[i] = NewMachinePoolSecurityGroupFilter().Copy(v)
+		}
+	} else {
+		b.securityGroupFilters = nil
+	}
+	if object.subnets != nil {
+		b.subnets = make([]string, len(object.subnets))
+		copy(b.subnets, object.subnets)
+	} else {
+		b.subnets = nil
+	}
 	if object.taints != nil {
 		b.taints = make([]*TaintBuilder, len(object.taints))
 		for i, v := range object.taints {
@@ -273,6 +312,19 @@ func (b *MachinePoolBuilder) Build() (object *MachinePool, err error) {
 		}
 	}
 	object.replicas = b.replicas
+	if b.securityGroupFilters != nil {
+		object.securityGroupFilters = make([]*MachinePoolSecurityGroupFilter, len(b.securityGroupFilters))
+		for i, v := range b.securityGroupFilters {
+			object.securityGroupFilters[i], err = v.Build()
+			if err != nil {
+				return
+			}
+		}
+	}
+	if b.subnets != nil {
+		object.subnets = make([]string, len(b.subnets))
+		copy(object.subnets, b.subnets)
+	}
 	if b.taints != nil {
 		object.taints = make([]*Taint, len(b.taints))
 		for i, v := range b.taints {

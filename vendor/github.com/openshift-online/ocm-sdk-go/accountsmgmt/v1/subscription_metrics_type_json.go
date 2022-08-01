@@ -21,7 +21,6 @@ package v1 // github.com/openshift-online/ocm-sdk-go/accountsmgmt/v1
 
 import (
 	"io"
-	"net/http"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/openshift-online/ocm-sdk-go/helpers"
@@ -31,7 +30,10 @@ import (
 func MarshalSubscriptionMetrics(object *SubscriptionMetrics, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeSubscriptionMetrics(object, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -236,7 +238,6 @@ func writeSubscriptionMetrics(object *SubscriptionMetrics, stream *jsoniter.Stre
 		}
 		stream.WriteObjectField("upgrade")
 		writeClusterUpgrade(object.upgrade, stream)
-		count++
 	}
 	stream.WriteObjectEnd()
 }
@@ -244,9 +245,6 @@ func writeSubscriptionMetrics(object *SubscriptionMetrics, stream *jsoniter.Stre
 // UnmarshalSubscriptionMetrics reads a value of the 'subscription_metrics' type from the given
 // source, which can be an slice of bytes, a string or a reader.
 func UnmarshalSubscriptionMetrics(source interface{}) (object *SubscriptionMetrics, err error) {
-	if source == http.NoBody {
-		return
-	}
 	iterator, err := helpers.NewIterator(source)
 	if err != nil {
 		return
