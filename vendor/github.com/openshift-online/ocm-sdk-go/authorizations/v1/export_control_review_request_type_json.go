@@ -21,7 +21,6 @@ package v1 // github.com/openshift-online/ocm-sdk-go/authorizations/v1
 
 import (
 	"io"
-	"net/http"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/openshift-online/ocm-sdk-go/helpers"
@@ -31,7 +30,10 @@ import (
 func MarshalExportControlReviewRequest(object *ExportControlReviewRequest, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeExportControlReviewRequest(object, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -47,7 +49,6 @@ func writeExportControlReviewRequest(object *ExportControlReviewRequest, stream 
 		}
 		stream.WriteObjectField("account_username")
 		stream.WriteString(object.accountUsername)
-		count++
 	}
 	stream.WriteObjectEnd()
 }
@@ -55,9 +56,6 @@ func writeExportControlReviewRequest(object *ExportControlReviewRequest, stream 
 // UnmarshalExportControlReviewRequest reads a value of the 'export_control_review_request' type from the given
 // source, which can be an slice of bytes, a string or a reader.
 func UnmarshalExportControlReviewRequest(source interface{}) (object *ExportControlReviewRequest, err error) {
-	if source == http.NoBody {
-		return
-	}
 	iterator, err := helpers.NewIterator(source)
 	if err != nil {
 		return

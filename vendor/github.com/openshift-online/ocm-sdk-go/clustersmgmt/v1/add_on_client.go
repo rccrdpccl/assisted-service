@@ -20,15 +20,16 @@ limitations under the License.
 package v1 // github.com/openshift-online/ocm-sdk-go/clustersmgmt/v1
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"path"
 	"time"
 
-	jsoniter "github.com/json-iterator/go"
 	"github.com/openshift-online/ocm-sdk-go/errors"
 	"github.com/openshift-online/ocm-sdk-go/helpers"
 )
@@ -79,6 +80,16 @@ func (c *AddOnClient) Update() *AddOnUpdateRequest {
 		transport: c.transport,
 		path:      c.path,
 	}
+}
+
+// Versions returns the target 'add_on_versions' resource.
+//
+// Reference to the resource that manages the collection of addon versions.
+func (c *AddOnClient) Versions() *AddOnVersionsClient {
+	return NewAddOnVersionsClient(
+		c.transport,
+		path.Join(c.path, "versions"),
+	)
 }
 
 // AddOnPollRequest is the request for the Poll method.
@@ -222,6 +233,13 @@ func (r *AddOnDeleteRequest) Header(name string, value interface{}) *AddOnDelete
 	return r
 }
 
+// Impersonate wraps requests on behalf of another user.
+// Note: Services that do not support this feature may silently ignore this call.
+func (r *AddOnDeleteRequest) Impersonate(user string) *AddOnDeleteRequest {
+	helpers.AddImpersonationHeader(&r.header, user)
+	return r
+}
+
 // Send sends this request, waits for the response, and returns it.
 //
 // This is a potentially lengthy operation, as it requires network communication.
@@ -254,8 +272,14 @@ func (r *AddOnDeleteRequest) SendContext(ctx context.Context) (result *AddOnDele
 	result = &AddOnDeleteResponse{}
 	result.status = response.StatusCode
 	result.header = response.Header
+	reader := bufio.NewReader(response.Body)
+	_, err = reader.Peek(1)
+	if err == io.EOF {
+		err = nil
+		return
+	}
 	if result.status >= 400 {
-		result.err, err = errors.UnmarshalError(response.Body)
+		result.err, err = errors.UnmarshalErrorStatus(reader, result.status)
 		if err != nil {
 			return
 		}
@@ -316,6 +340,13 @@ func (r *AddOnGetRequest) Header(name string, value interface{}) *AddOnGetReques
 	return r
 }
 
+// Impersonate wraps requests on behalf of another user.
+// Note: Services that do not support this feature may silently ignore this call.
+func (r *AddOnGetRequest) Impersonate(user string) *AddOnGetRequest {
+	helpers.AddImpersonationHeader(&r.header, user)
+	return r
+}
+
 // Send sends this request, waits for the response, and returns it.
 //
 // This is a potentially lengthy operation, as it requires network communication.
@@ -348,15 +379,21 @@ func (r *AddOnGetRequest) SendContext(ctx context.Context) (result *AddOnGetResp
 	result = &AddOnGetResponse{}
 	result.status = response.StatusCode
 	result.header = response.Header
+	reader := bufio.NewReader(response.Body)
+	_, err = reader.Peek(1)
+	if err == io.EOF {
+		err = nil
+		return
+	}
 	if result.status >= 400 {
-		result.err, err = errors.UnmarshalError(response.Body)
+		result.err, err = errors.UnmarshalErrorStatus(reader, result.status)
 		if err != nil {
 			return
 		}
 		err = result.err
 		return
 	}
-	err = readAddOnGetResponse(result, response.Body)
+	err = readAddOnGetResponse(result, reader)
 	if err != nil {
 		return
 	}
@@ -438,6 +475,13 @@ func (r *AddOnUpdateRequest) Header(name string, value interface{}) *AddOnUpdate
 	return r
 }
 
+// Impersonate wraps requests on behalf of another user.
+// Note: Services that do not support this feature may silently ignore this call.
+func (r *AddOnUpdateRequest) Impersonate(user string) *AddOnUpdateRequest {
+	helpers.AddImpersonationHeader(&r.header, user)
+	return r
+}
+
 // Body sets the value of the 'body' parameter.
 //
 //
@@ -484,29 +528,25 @@ func (r *AddOnUpdateRequest) SendContext(ctx context.Context) (result *AddOnUpda
 	result = &AddOnUpdateResponse{}
 	result.status = response.StatusCode
 	result.header = response.Header
+	reader := bufio.NewReader(response.Body)
+	_, err = reader.Peek(1)
+	if err == io.EOF {
+		err = nil
+		return
+	}
 	if result.status >= 400 {
-		result.err, err = errors.UnmarshalError(response.Body)
+		result.err, err = errors.UnmarshalErrorStatus(reader, result.status)
 		if err != nil {
 			return
 		}
 		err = result.err
 		return
 	}
-	err = readAddOnUpdateResponse(result, response.Body)
+	err = readAddOnUpdateResponse(result, reader)
 	if err != nil {
 		return
 	}
 	return
-}
-
-// marshall is the method used internally to marshal requests for the
-// 'update' method.
-func (r *AddOnUpdateRequest) marshal(writer io.Writer) error {
-	stream := helpers.NewStream(writer)
-	r.stream(stream)
-	return stream.Error
-}
-func (r *AddOnUpdateRequest) stream(stream *jsoniter.Stream) {
 }
 
 // AddOnUpdateResponse is the response for the 'update' method.

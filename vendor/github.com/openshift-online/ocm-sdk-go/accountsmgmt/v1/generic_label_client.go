@@ -20,6 +20,7 @@ limitations under the License.
 package v1 // github.com/openshift-online/ocm-sdk-go/accountsmgmt/v1
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"io"
@@ -28,7 +29,6 @@ import (
 	"net/url"
 	"time"
 
-	jsoniter "github.com/json-iterator/go"
 	"github.com/openshift-online/ocm-sdk-go/errors"
 	"github.com/openshift-online/ocm-sdk-go/helpers"
 )
@@ -222,6 +222,13 @@ func (r *GenericLabelDeleteRequest) Header(name string, value interface{}) *Gene
 	return r
 }
 
+// Impersonate wraps requests on behalf of another user.
+// Note: Services that do not support this feature may silently ignore this call.
+func (r *GenericLabelDeleteRequest) Impersonate(user string) *GenericLabelDeleteRequest {
+	helpers.AddImpersonationHeader(&r.header, user)
+	return r
+}
+
 // Send sends this request, waits for the response, and returns it.
 //
 // This is a potentially lengthy operation, as it requires network communication.
@@ -254,8 +261,14 @@ func (r *GenericLabelDeleteRequest) SendContext(ctx context.Context) (result *Ge
 	result = &GenericLabelDeleteResponse{}
 	result.status = response.StatusCode
 	result.header = response.Header
+	reader := bufio.NewReader(response.Body)
+	_, err = reader.Peek(1)
+	if err == io.EOF {
+		err = nil
+		return
+	}
 	if result.status >= 400 {
-		result.err, err = errors.UnmarshalError(response.Body)
+		result.err, err = errors.UnmarshalErrorStatus(reader, result.status)
 		if err != nil {
 			return
 		}
@@ -316,6 +329,13 @@ func (r *GenericLabelGetRequest) Header(name string, value interface{}) *Generic
 	return r
 }
 
+// Impersonate wraps requests on behalf of another user.
+// Note: Services that do not support this feature may silently ignore this call.
+func (r *GenericLabelGetRequest) Impersonate(user string) *GenericLabelGetRequest {
+	helpers.AddImpersonationHeader(&r.header, user)
+	return r
+}
+
 // Send sends this request, waits for the response, and returns it.
 //
 // This is a potentially lengthy operation, as it requires network communication.
@@ -348,15 +368,21 @@ func (r *GenericLabelGetRequest) SendContext(ctx context.Context) (result *Gener
 	result = &GenericLabelGetResponse{}
 	result.status = response.StatusCode
 	result.header = response.Header
+	reader := bufio.NewReader(response.Body)
+	_, err = reader.Peek(1)
+	if err == io.EOF {
+		err = nil
+		return
+	}
 	if result.status >= 400 {
-		result.err, err = errors.UnmarshalError(response.Body)
+		result.err, err = errors.UnmarshalErrorStatus(reader, result.status)
 		if err != nil {
 			return
 		}
 		err = result.err
 		return
 	}
-	err = readGenericLabelGetResponse(result, response.Body)
+	err = readGenericLabelGetResponse(result, reader)
 	if err != nil {
 		return
 	}
@@ -438,6 +464,13 @@ func (r *GenericLabelUpdateRequest) Header(name string, value interface{}) *Gene
 	return r
 }
 
+// Impersonate wraps requests on behalf of another user.
+// Note: Services that do not support this feature may silently ignore this call.
+func (r *GenericLabelUpdateRequest) Impersonate(user string) *GenericLabelUpdateRequest {
+	helpers.AddImpersonationHeader(&r.header, user)
+	return r
+}
+
 // Body sets the value of the 'body' parameter.
 //
 //
@@ -484,29 +517,25 @@ func (r *GenericLabelUpdateRequest) SendContext(ctx context.Context) (result *Ge
 	result = &GenericLabelUpdateResponse{}
 	result.status = response.StatusCode
 	result.header = response.Header
+	reader := bufio.NewReader(response.Body)
+	_, err = reader.Peek(1)
+	if err == io.EOF {
+		err = nil
+		return
+	}
 	if result.status >= 400 {
-		result.err, err = errors.UnmarshalError(response.Body)
+		result.err, err = errors.UnmarshalErrorStatus(reader, result.status)
 		if err != nil {
 			return
 		}
 		err = result.err
 		return
 	}
-	err = readGenericLabelUpdateResponse(result, response.Body)
+	err = readGenericLabelUpdateResponse(result, reader)
 	if err != nil {
 		return
 	}
 	return
-}
-
-// marshall is the method used internally to marshal requests for the
-// 'update' method.
-func (r *GenericLabelUpdateRequest) marshal(writer io.Writer) error {
-	stream := helpers.NewStream(writer)
-	r.stream(stream)
-	return stream.Error
-}
-func (r *GenericLabelUpdateRequest) stream(stream *jsoniter.Stream) {
 }
 
 // GenericLabelUpdateResponse is the response for the 'update' method.

@@ -20,6 +20,7 @@ limitations under the License.
 package v1 // github.com/openshift-online/ocm-sdk-go/clustersmgmt/v1
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"io"
@@ -29,7 +30,6 @@ import (
 	"path"
 	"time"
 
-	jsoniter "github.com/json-iterator/go"
 	"github.com/openshift-online/ocm-sdk-go/errors"
 	"github.com/openshift-online/ocm-sdk-go/helpers"
 )
@@ -114,6 +114,16 @@ func (c *ClusterClient) AWSInfrastructureAccessRoleGrants() *AWSInfrastructureAc
 	)
 }
 
+// STSOperatorRoles returns the target 'operator_IAM_roles' resource.
+//
+//
+func (c *ClusterClient) STSOperatorRoles() *OperatorIAMRolesClient {
+	return NewOperatorIAMRolesClient(
+		c.transport,
+		path.Join(c.path, "sts_operator_roles"),
+	)
+}
+
 // AddonInquiries returns the target 'addon_inquiries' resource.
 //
 // Reference to the resource that manages the collection of the add-on inquiries on this cluster.
@@ -161,6 +171,16 @@ func (c *ClusterClient) ExternalConfiguration() *ExternalConfigurationClient {
 	return NewExternalConfigurationClient(
 		c.transport,
 		path.Join(c.path, "external_configuration"),
+	)
+}
+
+// GateAgreements returns the target 'version_gate_agreements' resource.
+//
+// Reference to cluster's agreed version gate.
+func (c *ClusterClient) GateAgreements() *VersionGateAgreementsClient {
+	return NewVersionGateAgreementsClient(
+		c.transport,
+		path.Join(c.path, "gate_agreements"),
 	)
 }
 
@@ -412,6 +432,7 @@ type ClusterDeleteRequest struct {
 	query       url.Values
 	header      http.Header
 	deprovision *bool
+	dryRun      *bool
 }
 
 // Parameter adds a query parameter.
@@ -426,12 +447,27 @@ func (r *ClusterDeleteRequest) Header(name string, value interface{}) *ClusterDe
 	return r
 }
 
+// Impersonate wraps requests on behalf of another user.
+// Note: Services that do not support this feature may silently ignore this call.
+func (r *ClusterDeleteRequest) Impersonate(user string) *ClusterDeleteRequest {
+	helpers.AddImpersonationHeader(&r.header, user)
+	return r
+}
+
 // Deprovision sets the value of the 'deprovision' parameter.
 //
 // If false it will only delete from OCM but not the actual cluster resources.
 // false is only allowed for OCP clusters. true by default.
 func (r *ClusterDeleteRequest) Deprovision(value bool) *ClusterDeleteRequest {
 	r.deprovision = &value
+	return r
+}
+
+// DryRun sets the value of the 'dry_run' parameter.
+//
+// Dry run flag is used to check if the operation can be completed, but won't delete.
+func (r *ClusterDeleteRequest) DryRun(value bool) *ClusterDeleteRequest {
+	r.dryRun = &value
 	return r
 }
 
@@ -448,6 +484,9 @@ func (r *ClusterDeleteRequest) SendContext(ctx context.Context) (result *Cluster
 	query := helpers.CopyQuery(r.query)
 	if r.deprovision != nil {
 		helpers.AddValue(&query, "deprovision", *r.deprovision)
+	}
+	if r.dryRun != nil {
+		helpers.AddValue(&query, "dry_run", *r.dryRun)
 	}
 	header := helpers.CopyHeader(r.header)
 	uri := &url.URL{
@@ -470,8 +509,14 @@ func (r *ClusterDeleteRequest) SendContext(ctx context.Context) (result *Cluster
 	result = &ClusterDeleteResponse{}
 	result.status = response.StatusCode
 	result.header = response.Header
+	reader := bufio.NewReader(response.Body)
+	_, err = reader.Peek(1)
+	if err == io.EOF {
+		err = nil
+		return
+	}
 	if result.status >= 400 {
-		result.err, err = errors.UnmarshalError(response.Body)
+		result.err, err = errors.UnmarshalErrorStatus(reader, result.status)
 		if err != nil {
 			return
 		}
@@ -532,6 +577,13 @@ func (r *ClusterGetRequest) Header(name string, value interface{}) *ClusterGetRe
 	return r
 }
 
+// Impersonate wraps requests on behalf of another user.
+// Note: Services that do not support this feature may silently ignore this call.
+func (r *ClusterGetRequest) Impersonate(user string) *ClusterGetRequest {
+	helpers.AddImpersonationHeader(&r.header, user)
+	return r
+}
+
 // Send sends this request, waits for the response, and returns it.
 //
 // This is a potentially lengthy operation, as it requires network communication.
@@ -564,15 +616,21 @@ func (r *ClusterGetRequest) SendContext(ctx context.Context) (result *ClusterGet
 	result = &ClusterGetResponse{}
 	result.status = response.StatusCode
 	result.header = response.Header
+	reader := bufio.NewReader(response.Body)
+	_, err = reader.Peek(1)
+	if err == io.EOF {
+		err = nil
+		return
+	}
 	if result.status >= 400 {
-		result.err, err = errors.UnmarshalError(response.Body)
+		result.err, err = errors.UnmarshalErrorStatus(reader, result.status)
 		if err != nil {
 			return
 		}
 		err = result.err
 		return
 	}
-	err = readClusterGetResponse(result, response.Body)
+	err = readClusterGetResponse(result, reader)
 	if err != nil {
 		return
 	}
@@ -653,6 +711,13 @@ func (r *ClusterHibernateRequest) Header(name string, value interface{}) *Cluste
 	return r
 }
 
+// Impersonate wraps requests on behalf of another user.
+// Note: Services that do not support this feature may silently ignore this call.
+func (r *ClusterHibernateRequest) Impersonate(user string) *ClusterHibernateRequest {
+	helpers.AddImpersonationHeader(&r.header, user)
+	return r
+}
+
 // Send sends this request, waits for the response, and returns it.
 //
 // This is a potentially lengthy operation, as it requires network communication.
@@ -685,8 +750,14 @@ func (r *ClusterHibernateRequest) SendContext(ctx context.Context) (result *Clus
 	result = &ClusterHibernateResponse{}
 	result.status = response.StatusCode
 	result.header = response.Header
+	reader := bufio.NewReader(response.Body)
+	_, err = reader.Peek(1)
+	if err == io.EOF {
+		err = nil
+		return
+	}
 	if result.status >= 400 {
-		result.err, err = errors.UnmarshalError(response.Body)
+		result.err, err = errors.UnmarshalErrorStatus(reader, result.status)
 		if err != nil {
 			return
 		}
@@ -747,6 +818,13 @@ func (r *ClusterResumeRequest) Header(name string, value interface{}) *ClusterRe
 	return r
 }
 
+// Impersonate wraps requests on behalf of another user.
+// Note: Services that do not support this feature may silently ignore this call.
+func (r *ClusterResumeRequest) Impersonate(user string) *ClusterResumeRequest {
+	helpers.AddImpersonationHeader(&r.header, user)
+	return r
+}
+
 // Send sends this request, waits for the response, and returns it.
 //
 // This is a potentially lengthy operation, as it requires network communication.
@@ -779,8 +857,14 @@ func (r *ClusterResumeRequest) SendContext(ctx context.Context) (result *Cluster
 	result = &ClusterResumeResponse{}
 	result.status = response.StatusCode
 	result.header = response.Header
+	reader := bufio.NewReader(response.Body)
+	_, err = reader.Peek(1)
+	if err == io.EOF {
+		err = nil
+		return
+	}
 	if result.status >= 400 {
-		result.err, err = errors.UnmarshalError(response.Body)
+		result.err, err = errors.UnmarshalErrorStatus(reader, result.status)
 		if err != nil {
 			return
 		}
@@ -842,6 +926,13 @@ func (r *ClusterUpdateRequest) Header(name string, value interface{}) *ClusterUp
 	return r
 }
 
+// Impersonate wraps requests on behalf of another user.
+// Note: Services that do not support this feature may silently ignore this call.
+func (r *ClusterUpdateRequest) Impersonate(user string) *ClusterUpdateRequest {
+	helpers.AddImpersonationHeader(&r.header, user)
+	return r
+}
+
 // Body sets the value of the 'body' parameter.
 //
 //
@@ -888,29 +979,25 @@ func (r *ClusterUpdateRequest) SendContext(ctx context.Context) (result *Cluster
 	result = &ClusterUpdateResponse{}
 	result.status = response.StatusCode
 	result.header = response.Header
+	reader := bufio.NewReader(response.Body)
+	_, err = reader.Peek(1)
+	if err == io.EOF {
+		err = nil
+		return
+	}
 	if result.status >= 400 {
-		result.err, err = errors.UnmarshalError(response.Body)
+		result.err, err = errors.UnmarshalErrorStatus(reader, result.status)
 		if err != nil {
 			return
 		}
 		err = result.err
 		return
 	}
-	err = readClusterUpdateResponse(result, response.Body)
+	err = readClusterUpdateResponse(result, reader)
 	if err != nil {
 		return
 	}
 	return
-}
-
-// marshall is the method used internally to marshal requests for the
-// 'update' method.
-func (r *ClusterUpdateRequest) marshal(writer io.Writer) error {
-	stream := helpers.NewStream(writer)
-	r.stream(stream)
-	return stream.Error
-}
-func (r *ClusterUpdateRequest) stream(stream *jsoniter.Stream) {
 }
 
 // ClusterUpdateResponse is the response for the 'update' method.

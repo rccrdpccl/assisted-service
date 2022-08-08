@@ -44,12 +44,15 @@ type Account struct {
 	href           string
 	banCode        string
 	banDescription string
+	capabilities   []*Capability
 	createdAt      time.Time
 	email          string
 	firstName      string
 	labels         []*Label
 	lastName       string
 	organization   *Organization
+	rhitAccountID  string
+	rhitWebUserId  string
 	updatedAt      time.Time
 	username       string
 	banned         bool
@@ -182,12 +185,35 @@ func (o *Account) GetBanned() (value bool, ok bool) {
 	return
 }
 
+// Capabilities returns the value of the 'capabilities' attribute, or
+// the zero value of the type if the attribute doesn't have a value.
+//
+//
+func (o *Account) Capabilities() []*Capability {
+	if o != nil && o.bitmap_&64 != 0 {
+		return o.capabilities
+	}
+	return nil
+}
+
+// GetCapabilities returns the value of the 'capabilities' attribute and
+// a flag indicating if the attribute has a value.
+//
+//
+func (o *Account) GetCapabilities() (value []*Capability, ok bool) {
+	ok = o != nil && o.bitmap_&64 != 0
+	if ok {
+		value = o.capabilities
+	}
+	return
+}
+
 // CreatedAt returns the value of the 'created_at' attribute, or
 // the zero value of the type if the attribute doesn't have a value.
 //
 //
 func (o *Account) CreatedAt() time.Time {
-	if o != nil && o.bitmap_&64 != 0 {
+	if o != nil && o.bitmap_&128 != 0 {
 		return o.createdAt
 	}
 	return time.Time{}
@@ -198,7 +224,7 @@ func (o *Account) CreatedAt() time.Time {
 //
 //
 func (o *Account) GetCreatedAt() (value time.Time, ok bool) {
-	ok = o != nil && o.bitmap_&64 != 0
+	ok = o != nil && o.bitmap_&128 != 0
 	if ok {
 		value = o.createdAt
 	}
@@ -210,7 +236,7 @@ func (o *Account) GetCreatedAt() (value time.Time, ok bool) {
 //
 //
 func (o *Account) Email() string {
-	if o != nil && o.bitmap_&128 != 0 {
+	if o != nil && o.bitmap_&256 != 0 {
 		return o.email
 	}
 	return ""
@@ -221,7 +247,7 @@ func (o *Account) Email() string {
 //
 //
 func (o *Account) GetEmail() (value string, ok bool) {
-	ok = o != nil && o.bitmap_&128 != 0
+	ok = o != nil && o.bitmap_&256 != 0
 	if ok {
 		value = o.email
 	}
@@ -233,7 +259,7 @@ func (o *Account) GetEmail() (value string, ok bool) {
 //
 //
 func (o *Account) FirstName() string {
-	if o != nil && o.bitmap_&256 != 0 {
+	if o != nil && o.bitmap_&512 != 0 {
 		return o.firstName
 	}
 	return ""
@@ -244,7 +270,7 @@ func (o *Account) FirstName() string {
 //
 //
 func (o *Account) GetFirstName() (value string, ok bool) {
-	ok = o != nil && o.bitmap_&256 != 0
+	ok = o != nil && o.bitmap_&512 != 0
 	if ok {
 		value = o.firstName
 	}
@@ -256,7 +282,7 @@ func (o *Account) GetFirstName() (value string, ok bool) {
 //
 //
 func (o *Account) Labels() []*Label {
-	if o != nil && o.bitmap_&512 != 0 {
+	if o != nil && o.bitmap_&1024 != 0 {
 		return o.labels
 	}
 	return nil
@@ -267,7 +293,7 @@ func (o *Account) Labels() []*Label {
 //
 //
 func (o *Account) GetLabels() (value []*Label, ok bool) {
-	ok = o != nil && o.bitmap_&512 != 0
+	ok = o != nil && o.bitmap_&1024 != 0
 	if ok {
 		value = o.labels
 	}
@@ -279,7 +305,7 @@ func (o *Account) GetLabels() (value []*Label, ok bool) {
 //
 //
 func (o *Account) LastName() string {
-	if o != nil && o.bitmap_&1024 != 0 {
+	if o != nil && o.bitmap_&2048 != 0 {
 		return o.lastName
 	}
 	return ""
@@ -290,7 +316,7 @@ func (o *Account) LastName() string {
 //
 //
 func (o *Account) GetLastName() (value string, ok bool) {
-	ok = o != nil && o.bitmap_&1024 != 0
+	ok = o != nil && o.bitmap_&2048 != 0
 	if ok {
 		value = o.lastName
 	}
@@ -302,7 +328,7 @@ func (o *Account) GetLastName() (value string, ok bool) {
 //
 //
 func (o *Account) Organization() *Organization {
-	if o != nil && o.bitmap_&2048 != 0 {
+	if o != nil && o.bitmap_&4096 != 0 {
 		return o.organization
 	}
 	return nil
@@ -313,9 +339,55 @@ func (o *Account) Organization() *Organization {
 //
 //
 func (o *Account) GetOrganization() (value *Organization, ok bool) {
-	ok = o != nil && o.bitmap_&2048 != 0
+	ok = o != nil && o.bitmap_&4096 != 0
 	if ok {
 		value = o.organization
+	}
+	return
+}
+
+// RhitAccountID returns the value of the 'rhit_account_ID' attribute, or
+// the zero value of the type if the attribute doesn't have a value.
+//
+// RhitAccountID will be deprecated in favor of RhitWebUserId
+func (o *Account) RhitAccountID() string {
+	if o != nil && o.bitmap_&8192 != 0 {
+		return o.rhitAccountID
+	}
+	return ""
+}
+
+// GetRhitAccountID returns the value of the 'rhit_account_ID' attribute and
+// a flag indicating if the attribute has a value.
+//
+// RhitAccountID will be deprecated in favor of RhitWebUserId
+func (o *Account) GetRhitAccountID() (value string, ok bool) {
+	ok = o != nil && o.bitmap_&8192 != 0
+	if ok {
+		value = o.rhitAccountID
+	}
+	return
+}
+
+// RhitWebUserId returns the value of the 'rhit_web_user_id' attribute, or
+// the zero value of the type if the attribute doesn't have a value.
+//
+//
+func (o *Account) RhitWebUserId() string {
+	if o != nil && o.bitmap_&16384 != 0 {
+		return o.rhitWebUserId
+	}
+	return ""
+}
+
+// GetRhitWebUserId returns the value of the 'rhit_web_user_id' attribute and
+// a flag indicating if the attribute has a value.
+//
+//
+func (o *Account) GetRhitWebUserId() (value string, ok bool) {
+	ok = o != nil && o.bitmap_&16384 != 0
+	if ok {
+		value = o.rhitWebUserId
 	}
 	return
 }
@@ -325,7 +397,7 @@ func (o *Account) GetOrganization() (value *Organization, ok bool) {
 //
 //
 func (o *Account) ServiceAccount() bool {
-	if o != nil && o.bitmap_&4096 != 0 {
+	if o != nil && o.bitmap_&32768 != 0 {
 		return o.serviceAccount
 	}
 	return false
@@ -336,7 +408,7 @@ func (o *Account) ServiceAccount() bool {
 //
 //
 func (o *Account) GetServiceAccount() (value bool, ok bool) {
-	ok = o != nil && o.bitmap_&4096 != 0
+	ok = o != nil && o.bitmap_&32768 != 0
 	if ok {
 		value = o.serviceAccount
 	}
@@ -348,7 +420,7 @@ func (o *Account) GetServiceAccount() (value bool, ok bool) {
 //
 //
 func (o *Account) UpdatedAt() time.Time {
-	if o != nil && o.bitmap_&8192 != 0 {
+	if o != nil && o.bitmap_&65536 != 0 {
 		return o.updatedAt
 	}
 	return time.Time{}
@@ -359,7 +431,7 @@ func (o *Account) UpdatedAt() time.Time {
 //
 //
 func (o *Account) GetUpdatedAt() (value time.Time, ok bool) {
-	ok = o != nil && o.bitmap_&8192 != 0
+	ok = o != nil && o.bitmap_&65536 != 0
 	if ok {
 		value = o.updatedAt
 	}
@@ -371,7 +443,7 @@ func (o *Account) GetUpdatedAt() (value time.Time, ok bool) {
 //
 //
 func (o *Account) Username() string {
-	if o != nil && o.bitmap_&16384 != 0 {
+	if o != nil && o.bitmap_&131072 != 0 {
 		return o.username
 	}
 	return ""
@@ -382,7 +454,7 @@ func (o *Account) Username() string {
 //
 //
 func (o *Account) GetUsername() (value string, ok bool) {
-	ok = o != nil && o.bitmap_&16384 != 0
+	ok = o != nil && o.bitmap_&131072 != 0
 	if ok {
 		value = o.username
 	}

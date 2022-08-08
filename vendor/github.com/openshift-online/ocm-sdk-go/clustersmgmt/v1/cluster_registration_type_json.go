@@ -21,7 +21,6 @@ package v1 // github.com/openshift-online/ocm-sdk-go/clustersmgmt/v1
 
 import (
 	"io"
-	"net/http"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/openshift-online/ocm-sdk-go/helpers"
@@ -31,7 +30,10 @@ import (
 func MarshalClusterRegistration(object *ClusterRegistration, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeClusterRegistration(object, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -65,7 +67,6 @@ func writeClusterRegistration(object *ClusterRegistration, stream *jsoniter.Stre
 		}
 		stream.WriteObjectField("subscription_id")
 		stream.WriteString(object.subscriptionID)
-		count++
 	}
 	stream.WriteObjectEnd()
 }
@@ -73,9 +74,6 @@ func writeClusterRegistration(object *ClusterRegistration, stream *jsoniter.Stre
 // UnmarshalClusterRegistration reads a value of the 'cluster_registration' type from the given
 // source, which can be an slice of bytes, a string or a reader.
 func UnmarshalClusterRegistration(source interface{}) (object *ClusterRegistration, err error) {
-	if source == http.NoBody {
-		return
-	}
 	iterator, err := helpers.NewIterator(source)
 	if err != nil {
 		return
