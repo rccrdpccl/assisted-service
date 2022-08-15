@@ -31,6 +31,7 @@ type AddOnInstallationBuilder struct {
 	id                string
 	href              string
 	addon             *AddOnBuilder
+	addonVersion      *AddOnVersionBuilder
 	cluster           *ClusterBuilder
 	creationTimestamp time.Time
 	operatorVersion   string
@@ -65,6 +66,11 @@ func (b *AddOnInstallationBuilder) HREF(value string) *AddOnInstallationBuilder 
 	return b
 }
 
+// Empty returns true if the builder is empty, i.e. no attribute has a value.
+func (b *AddOnInstallationBuilder) Empty() bool {
+	return b == nil || b.bitmap_&^1 == 0
+}
+
 // Addon sets the value of the 'addon' attribute to the given value.
 //
 // Representation of an add-on that can be installed in a cluster.
@@ -78,6 +84,19 @@ func (b *AddOnInstallationBuilder) Addon(value *AddOnBuilder) *AddOnInstallation
 	return b
 }
 
+// AddonVersion sets the value of the 'addon_version' attribute to the given value.
+//
+// Representation of an add-on version.
+func (b *AddOnInstallationBuilder) AddonVersion(value *AddOnVersionBuilder) *AddOnInstallationBuilder {
+	b.addonVersion = value
+	if value != nil {
+		b.bitmap_ |= 16
+	} else {
+		b.bitmap_ &^= 16
+	}
+	return b
+}
+
 // Cluster sets the value of the 'cluster' attribute to the given value.
 //
 // Definition of an _OpenShift_ cluster.
@@ -86,8 +105,7 @@ func (b *AddOnInstallationBuilder) Addon(value *AddOnBuilder) *AddOnInstallation
 // cluster is retrieved it will be a link to the cloud provider, containing only
 // the kind, id and href attributes:
 //
-// [source,json]
-// ----
+// ```json
 // {
 //   "cloud_provider": {
 //     "kind": "CloudProviderLink",
@@ -95,19 +113,18 @@ func (b *AddOnInstallationBuilder) Addon(value *AddOnBuilder) *AddOnInstallation
 //     "href": "/api/clusters_mgmt/v1/cloud_providers/123"
 //   }
 // }
-// ----
+// ```
 //
 // When a cluster is created this is optional, and if used it should contain the
 // identifier of the cloud provider to use:
 //
-// [source,json]
-// ----
+// ```json
 // {
 //   "cloud_provider": {
 //     "id": "123",
 //   }
 // }
-// ----
+// ```
 //
 // If not included, then the cluster will be created using the default cloud
 // provider, which is currently Amazon Web Services.
@@ -120,9 +137,9 @@ func (b *AddOnInstallationBuilder) Addon(value *AddOnBuilder) *AddOnInstallation
 func (b *AddOnInstallationBuilder) Cluster(value *ClusterBuilder) *AddOnInstallationBuilder {
 	b.cluster = value
 	if value != nil {
-		b.bitmap_ |= 16
+		b.bitmap_ |= 32
 	} else {
-		b.bitmap_ &^= 16
+		b.bitmap_ &^= 32
 	}
 	return b
 }
@@ -132,7 +149,7 @@ func (b *AddOnInstallationBuilder) Cluster(value *ClusterBuilder) *AddOnInstalla
 //
 func (b *AddOnInstallationBuilder) CreationTimestamp(value time.Time) *AddOnInstallationBuilder {
 	b.creationTimestamp = value
-	b.bitmap_ |= 32
+	b.bitmap_ |= 64
 	return b
 }
 
@@ -141,7 +158,7 @@ func (b *AddOnInstallationBuilder) CreationTimestamp(value time.Time) *AddOnInst
 //
 func (b *AddOnInstallationBuilder) OperatorVersion(value string) *AddOnInstallationBuilder {
 	b.operatorVersion = value
-	b.bitmap_ |= 64
+	b.bitmap_ |= 128
 	return b
 }
 
@@ -150,7 +167,7 @@ func (b *AddOnInstallationBuilder) OperatorVersion(value string) *AddOnInstallat
 //
 func (b *AddOnInstallationBuilder) Parameters(value *AddOnInstallationParameterListBuilder) *AddOnInstallationBuilder {
 	b.parameters = value
-	b.bitmap_ |= 128
+	b.bitmap_ |= 256
 	return b
 }
 
@@ -159,7 +176,7 @@ func (b *AddOnInstallationBuilder) Parameters(value *AddOnInstallationParameterL
 // Representation of an add-on installation State field.
 func (b *AddOnInstallationBuilder) State(value AddOnInstallationState) *AddOnInstallationBuilder {
 	b.state = value
-	b.bitmap_ |= 256
+	b.bitmap_ |= 512
 	return b
 }
 
@@ -168,7 +185,7 @@ func (b *AddOnInstallationBuilder) State(value AddOnInstallationState) *AddOnIns
 //
 func (b *AddOnInstallationBuilder) StateDescription(value string) *AddOnInstallationBuilder {
 	b.stateDescription = value
-	b.bitmap_ |= 512
+	b.bitmap_ |= 1024
 	return b
 }
 
@@ -177,7 +194,7 @@ func (b *AddOnInstallationBuilder) StateDescription(value string) *AddOnInstalla
 //
 func (b *AddOnInstallationBuilder) UpdatedTimestamp(value time.Time) *AddOnInstallationBuilder {
 	b.updatedTimestamp = value
-	b.bitmap_ |= 1024
+	b.bitmap_ |= 2048
 	return b
 }
 
@@ -193,6 +210,11 @@ func (b *AddOnInstallationBuilder) Copy(object *AddOnInstallation) *AddOnInstall
 		b.addon = NewAddOn().Copy(object.addon)
 	} else {
 		b.addon = nil
+	}
+	if object.addonVersion != nil {
+		b.addonVersion = NewAddOnVersion().Copy(object.addonVersion)
+	} else {
+		b.addonVersion = nil
 	}
 	if object.cluster != nil {
 		b.cluster = NewCluster().Copy(object.cluster)
@@ -220,6 +242,12 @@ func (b *AddOnInstallationBuilder) Build() (object *AddOnInstallation, err error
 	object.bitmap_ = b.bitmap_
 	if b.addon != nil {
 		object.addon, err = b.addon.Build()
+		if err != nil {
+			return
+		}
+	}
+	if b.addonVersion != nil {
+		object.addonVersion, err = b.addonVersion.Build()
 		if err != nil {
 			return
 		}

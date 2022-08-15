@@ -20,7 +20,9 @@ limitations under the License.
 package v1 // github.com/openshift-online/ocm-sdk-go/clustersmgmt/v1
 
 import (
+	"bufio"
 	"context"
+	"io"
 	"net/http"
 	"net/url"
 
@@ -80,6 +82,13 @@ func (r *MachineTypesListRequest) Header(name string, value interface{}) *Machin
 	return r
 }
 
+// Impersonate wraps requests on behalf of another user.
+// Note: Services that do not support this feature may silently ignore this call.
+func (r *MachineTypesListRequest) Impersonate(user string) *MachineTypesListRequest {
+	helpers.AddImpersonationHeader(&r.header, user)
+	return r
+}
+
 // Order sets the value of the 'order' parameter.
 //
 // Order criteria.
@@ -89,10 +98,9 @@ func (r *MachineTypesListRequest) Header(name string, value interface{}) *Machin
 // instead of the names of the columns of a table. For example, in order to sort the
 // machine types descending by name identifier the value should be:
 //
-// [source,sql]
-// ----
+// ```sql
 // name desc
-// ----
+// ```
 //
 // If the parameter isn't provided, or if the value is empty, then the order of the
 // results is undefined.
@@ -118,10 +126,9 @@ func (r *MachineTypesListRequest) Page(value int) *MachineTypesListRequest {
 // instead of the names of the columns of a table. For example, in order to retrieve
 // all the machine types with a name starting with `A` the value should be:
 //
-// [source,sql]
-// ----
+// ```sql
 // name like 'A%'
-// ----
+// ```
 //
 // If the parameter isn't provided, or if the value is empty, then all the machine
 // types that the user has permission to see will be returned.
@@ -182,15 +189,21 @@ func (r *MachineTypesListRequest) SendContext(ctx context.Context) (result *Mach
 	result = &MachineTypesListResponse{}
 	result.status = response.StatusCode
 	result.header = response.Header
+	reader := bufio.NewReader(response.Body)
+	_, err = reader.Peek(1)
+	if err == io.EOF {
+		err = nil
+		return
+	}
 	if result.status >= 400 {
-		result.err, err = errors.UnmarshalError(response.Body)
+		result.err, err = errors.UnmarshalErrorStatus(reader, result.status)
 		if err != nil {
 			return
 		}
 		err = result.err
 		return
 	}
-	err = readMachineTypesListResponse(result, response.Body)
+	err = readMachineTypesListResponse(result, reader)
 	if err != nil {
 		return
 	}

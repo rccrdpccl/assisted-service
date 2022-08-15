@@ -21,7 +21,6 @@ package v1 // github.com/openshift-online/ocm-sdk-go/accountsmgmt/v1
 
 import (
 	"io"
-	"net/http"
 	"sort"
 
 	jsoniter "github.com/json-iterator/go"
@@ -32,7 +31,10 @@ import (
 func MarshalAccessToken(object *AccessToken, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeAccessToken(object, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -68,7 +70,6 @@ func writeAccessToken(object *AccessToken, stream *jsoniter.Stream) {
 		} else {
 			stream.WriteNil()
 		}
-		count++
 	}
 	stream.WriteObjectEnd()
 }
@@ -76,9 +77,6 @@ func writeAccessToken(object *AccessToken, stream *jsoniter.Stream) {
 // UnmarshalAccessToken reads a value of the 'access_token' type from the given
 // source, which can be an slice of bytes, a string or a reader.
 func UnmarshalAccessToken(source interface{}) (object *AccessToken, err error) {
-	if source == http.NoBody {
-		return
-	}
 	iterator, err := helpers.NewIterator(source)
 	if err != nil {
 		return

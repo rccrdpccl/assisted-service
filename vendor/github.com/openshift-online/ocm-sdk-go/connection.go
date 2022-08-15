@@ -41,6 +41,9 @@ import (
 	"github.com/openshift-online/ocm-sdk-go/metrics"
 	"github.com/openshift-online/ocm-sdk-go/retry"
 	"github.com/openshift-online/ocm-sdk-go/servicelogs"
+	"github.com/openshift-online/ocm-sdk-go/servicemgmt"
+	"github.com/openshift-online/ocm-sdk-go/statusboard"
+	"github.com/openshift-online/ocm-sdk-go/webrca"
 )
 
 // Default values:
@@ -985,11 +988,31 @@ func (c *Connection) JobQueue() *jobqueue.Client {
 	return jobqueue.NewClient(c, "/api/job_queue")
 }
 
+// Status board returns the client for the status board service.
+func (c *Connection) StatusBoard() *statusboard.Client {
+	return statusboard.NewClient(c, "/api/status-board")
+}
+
+// ServiceMgmt returns the client for the service management service.
+func (c *Connection) ServiceMgmt() *servicemgmt.Client {
+	return servicemgmt.NewClient(c, "/api/service_mgmt")
+}
+
+// WebRCA returns the client for the web RCA service.
+func (c *Connection) WebRCA() *webrca.Client {
+	return webrca.NewClient(c, "/api/web-rca")
+}
+
 // Close releases all the resources used by the connection. It is very important to always close it
 // once it is no longer needed, as otherwise those resources may be leaked. Trying to use a
 // connection that has been closed will result in a error.
 func (c *Connection) Close() error {
 	var err error
+
+	// in case the connection is already closed, return instead of printing an error message
+	if c.closed {
+		return nil
+	}
 
 	// Close the HTTP clients:
 	err = c.clientSelector.Close()
@@ -1003,7 +1026,7 @@ func (c *Connection) Close() error {
 		return err
 	}
 
-	// Makr the connection as closed, so that further attempts to use it will fail:
+	// Mark the connection as closed, so that further attempts to use it will fail:
 	c.closed = true
 	return nil
 }

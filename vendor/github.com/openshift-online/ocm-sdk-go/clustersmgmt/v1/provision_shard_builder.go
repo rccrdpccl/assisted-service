@@ -26,11 +26,16 @@ type ProvisionShardBuilder struct {
 	bitmap_                  uint32
 	id                       string
 	href                     string
-	awsAccountOperatorConfig *ServerConfigBuilder
+	awsAccountOperatorConfig string
 	awsBaseDomain            string
 	gcpBaseDomain            string
-	gcpProjectOperator       *ServerConfigBuilder
-	hiveConfig               *ServerConfigBuilder
+	gcpProjectOperator       string
+	cloudProvider            *CloudProviderBuilder
+	hiveConfig               string
+	hypershiftConfig         string
+	managementCluster        string
+	region                   *CloudRegionBuilder
+	status                   string
 }
 
 // NewProvisionShard creates a new builder of 'provision_shard' objects.
@@ -58,16 +63,17 @@ func (b *ProvisionShardBuilder) HREF(value string) *ProvisionShardBuilder {
 	return b
 }
 
+// Empty returns true if the builder is empty, i.e. no attribute has a value.
+func (b *ProvisionShardBuilder) Empty() bool {
+	return b == nil || b.bitmap_&^1 == 0
+}
+
 // AWSAccountOperatorConfig sets the value of the 'AWS_account_operator_config' attribute to the given value.
 //
-// Representation of a server config
-func (b *ProvisionShardBuilder) AWSAccountOperatorConfig(value *ServerConfigBuilder) *ProvisionShardBuilder {
+//
+func (b *ProvisionShardBuilder) AWSAccountOperatorConfig(value string) *ProvisionShardBuilder {
 	b.awsAccountOperatorConfig = value
-	if value != nil {
-		b.bitmap_ |= 8
-	} else {
-		b.bitmap_ &^= 8
-	}
+	b.bitmap_ |= 8
 	return b
 }
 
@@ -91,27 +97,72 @@ func (b *ProvisionShardBuilder) GCPBaseDomain(value string) *ProvisionShardBuild
 
 // GCPProjectOperator sets the value of the 'GCP_project_operator' attribute to the given value.
 //
-// Representation of a server config
-func (b *ProvisionShardBuilder) GCPProjectOperator(value *ServerConfigBuilder) *ProvisionShardBuilder {
+//
+func (b *ProvisionShardBuilder) GCPProjectOperator(value string) *ProvisionShardBuilder {
 	b.gcpProjectOperator = value
+	b.bitmap_ |= 64
+	return b
+}
+
+// CloudProvider sets the value of the 'cloud_provider' attribute to the given value.
+//
+// Cloud provider.
+func (b *ProvisionShardBuilder) CloudProvider(value *CloudProviderBuilder) *ProvisionShardBuilder {
+	b.cloudProvider = value
 	if value != nil {
-		b.bitmap_ |= 64
+		b.bitmap_ |= 128
 	} else {
-		b.bitmap_ &^= 64
+		b.bitmap_ &^= 128
 	}
 	return b
 }
 
 // HiveConfig sets the value of the 'hive_config' attribute to the given value.
 //
-// Representation of a server config
-func (b *ProvisionShardBuilder) HiveConfig(value *ServerConfigBuilder) *ProvisionShardBuilder {
+//
+func (b *ProvisionShardBuilder) HiveConfig(value string) *ProvisionShardBuilder {
 	b.hiveConfig = value
+	b.bitmap_ |= 256
+	return b
+}
+
+// HypershiftConfig sets the value of the 'hypershift_config' attribute to the given value.
+//
+//
+func (b *ProvisionShardBuilder) HypershiftConfig(value string) *ProvisionShardBuilder {
+	b.hypershiftConfig = value
+	b.bitmap_ |= 512
+	return b
+}
+
+// ManagementCluster sets the value of the 'management_cluster' attribute to the given value.
+//
+//
+func (b *ProvisionShardBuilder) ManagementCluster(value string) *ProvisionShardBuilder {
+	b.managementCluster = value
+	b.bitmap_ |= 1024
+	return b
+}
+
+// Region sets the value of the 'region' attribute to the given value.
+//
+// Description of a region of a cloud provider.
+func (b *ProvisionShardBuilder) Region(value *CloudRegionBuilder) *ProvisionShardBuilder {
+	b.region = value
 	if value != nil {
-		b.bitmap_ |= 128
+		b.bitmap_ |= 2048
 	} else {
-		b.bitmap_ &^= 128
+		b.bitmap_ &^= 2048
 	}
+	return b
+}
+
+// Status sets the value of the 'status' attribute to the given value.
+//
+//
+func (b *ProvisionShardBuilder) Status(value string) *ProvisionShardBuilder {
+	b.status = value
+	b.bitmap_ |= 4096
 	return b
 }
 
@@ -123,23 +174,24 @@ func (b *ProvisionShardBuilder) Copy(object *ProvisionShard) *ProvisionShardBuil
 	b.bitmap_ = object.bitmap_
 	b.id = object.id
 	b.href = object.href
-	if object.awsAccountOperatorConfig != nil {
-		b.awsAccountOperatorConfig = NewServerConfig().Copy(object.awsAccountOperatorConfig)
-	} else {
-		b.awsAccountOperatorConfig = nil
-	}
+	b.awsAccountOperatorConfig = object.awsAccountOperatorConfig
 	b.awsBaseDomain = object.awsBaseDomain
 	b.gcpBaseDomain = object.gcpBaseDomain
-	if object.gcpProjectOperator != nil {
-		b.gcpProjectOperator = NewServerConfig().Copy(object.gcpProjectOperator)
+	b.gcpProjectOperator = object.gcpProjectOperator
+	if object.cloudProvider != nil {
+		b.cloudProvider = NewCloudProvider().Copy(object.cloudProvider)
 	} else {
-		b.gcpProjectOperator = nil
+		b.cloudProvider = nil
 	}
-	if object.hiveConfig != nil {
-		b.hiveConfig = NewServerConfig().Copy(object.hiveConfig)
+	b.hiveConfig = object.hiveConfig
+	b.hypershiftConfig = object.hypershiftConfig
+	b.managementCluster = object.managementCluster
+	if object.region != nil {
+		b.region = NewCloudRegion().Copy(object.region)
 	} else {
-		b.hiveConfig = nil
+		b.region = nil
 	}
+	b.status = object.status
 	return b
 }
 
@@ -149,25 +201,25 @@ func (b *ProvisionShardBuilder) Build() (object *ProvisionShard, err error) {
 	object.id = b.id
 	object.href = b.href
 	object.bitmap_ = b.bitmap_
-	if b.awsAccountOperatorConfig != nil {
-		object.awsAccountOperatorConfig, err = b.awsAccountOperatorConfig.Build()
-		if err != nil {
-			return
-		}
-	}
+	object.awsAccountOperatorConfig = b.awsAccountOperatorConfig
 	object.awsBaseDomain = b.awsBaseDomain
 	object.gcpBaseDomain = b.gcpBaseDomain
-	if b.gcpProjectOperator != nil {
-		object.gcpProjectOperator, err = b.gcpProjectOperator.Build()
+	object.gcpProjectOperator = b.gcpProjectOperator
+	if b.cloudProvider != nil {
+		object.cloudProvider, err = b.cloudProvider.Build()
 		if err != nil {
 			return
 		}
 	}
-	if b.hiveConfig != nil {
-		object.hiveConfig, err = b.hiveConfig.Build()
+	object.hiveConfig = b.hiveConfig
+	object.hypershiftConfig = b.hypershiftConfig
+	object.managementCluster = b.managementCluster
+	if b.region != nil {
+		object.region, err = b.region.Build()
 		if err != nil {
 			return
 		}
 	}
+	object.status = b.status
 	return
 }
