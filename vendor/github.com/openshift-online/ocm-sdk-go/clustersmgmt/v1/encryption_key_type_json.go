@@ -21,7 +21,6 @@ package v1 // github.com/openshift-online/ocm-sdk-go/clustersmgmt/v1
 
 import (
 	"io"
-	"net/http"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/openshift-online/ocm-sdk-go/helpers"
@@ -31,7 +30,10 @@ import (
 func MarshalEncryptionKey(object *EncryptionKey, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeEncryptionKey(object, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -70,7 +72,6 @@ func writeEncryptionKey(object *EncryptionKey, stream *jsoniter.Stream) {
 		}
 		stream.WriteObjectField("name")
 		stream.WriteString(object.name)
-		count++
 	}
 	stream.WriteObjectEnd()
 }
@@ -78,9 +79,6 @@ func writeEncryptionKey(object *EncryptionKey, stream *jsoniter.Stream) {
 // UnmarshalEncryptionKey reads a value of the 'encryption_key' type from the given
 // source, which can be an slice of bytes, a string or a reader.
 func UnmarshalEncryptionKey(source interface{}) (object *EncryptionKey, err error) {
-	if source == http.NoBody {
-		return
-	}
 	iterator, err := helpers.NewIterator(source)
 	if err != nil {
 		return

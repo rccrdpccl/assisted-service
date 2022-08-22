@@ -21,7 +21,6 @@ package v1 // github.com/openshift-online/ocm-sdk-go/accountsmgmt/v1
 
 import (
 	"io"
-	"net/http"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/openshift-online/ocm-sdk-go/helpers"
@@ -31,7 +30,10 @@ import (
 func MarshalSummarySample(object *SummarySample, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeSummarySample(object, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -56,7 +58,6 @@ func writeSummarySample(object *SummarySample, stream *jsoniter.Stream) {
 		}
 		stream.WriteObjectField("value")
 		stream.WriteFloat64(object.value)
-		count++
 	}
 	stream.WriteObjectEnd()
 }
@@ -64,9 +65,6 @@ func writeSummarySample(object *SummarySample, stream *jsoniter.Stream) {
 // UnmarshalSummarySample reads a value of the 'summary_sample' type from the given
 // source, which can be an slice of bytes, a string or a reader.
 func UnmarshalSummarySample(source interface{}) (object *SummarySample, err error) {
-	if source == http.NoBody {
-		return
-	}
 	iterator, err := helpers.NewIterator(source)
 	if err != nil {
 		return

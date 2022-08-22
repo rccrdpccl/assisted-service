@@ -21,7 +21,6 @@ package v1 // github.com/openshift-online/ocm-sdk-go/clustersmgmt/v1
 
 import (
 	"io"
-	"net/http"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/openshift-online/ocm-sdk-go/helpers"
@@ -31,7 +30,10 @@ import (
 func MarshalExternalConfiguration(object *ExternalConfiguration, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeExternalConfiguration(object, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -62,7 +64,6 @@ func writeExternalConfiguration(object *ExternalConfiguration, stream *jsoniter.
 		stream.WriteObjectField("items")
 		writeSyncsetList(object.syncsets.items, stream)
 		stream.WriteObjectEnd()
-		count++
 	}
 	stream.WriteObjectEnd()
 }
@@ -70,9 +71,6 @@ func writeExternalConfiguration(object *ExternalConfiguration, stream *jsoniter.
 // UnmarshalExternalConfiguration reads a value of the 'external_configuration' type from the given
 // source, which can be an slice of bytes, a string or a reader.
 func UnmarshalExternalConfiguration(source interface{}) (object *ExternalConfiguration, err error) {
-	if source == http.NoBody {
-		return
-	}
 	iterator, err := helpers.NewIterator(source)
 	if err != nil {
 		return

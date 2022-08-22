@@ -20,6 +20,7 @@ limitations under the License.
 package v1 // github.com/openshift-online/ocm-sdk-go/clustersmgmt/v1
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"io"
@@ -27,7 +28,6 @@ import (
 	"net/http"
 	"net/url"
 
-	jsoniter "github.com/json-iterator/go"
 	"github.com/openshift-online/ocm-sdk-go/errors"
 	"github.com/openshift-online/ocm-sdk-go/helpers"
 )
@@ -83,6 +83,13 @@ func (r *EncryptionKeysInquirySearchRequest) Parameter(name string, value interf
 // Header adds a request header.
 func (r *EncryptionKeysInquirySearchRequest) Header(name string, value interface{}) *EncryptionKeysInquirySearchRequest {
 	helpers.AddHeader(&r.header, name, value)
+	return r
+}
+
+// Impersonate wraps requests on behalf of another user.
+// Note: Services that do not support this feature may silently ignore this call.
+func (r *EncryptionKeysInquirySearchRequest) Impersonate(user string) *EncryptionKeysInquirySearchRequest {
+	helpers.AddImpersonationHeader(&r.header, user)
 	return r
 }
 
@@ -157,29 +164,25 @@ func (r *EncryptionKeysInquirySearchRequest) SendContext(ctx context.Context) (r
 	result = &EncryptionKeysInquirySearchResponse{}
 	result.status = response.StatusCode
 	result.header = response.Header
+	reader := bufio.NewReader(response.Body)
+	_, err = reader.Peek(1)
+	if err == io.EOF {
+		err = nil
+		return
+	}
 	if result.status >= 400 {
-		result.err, err = errors.UnmarshalError(response.Body)
+		result.err, err = errors.UnmarshalErrorStatus(reader, result.status)
 		if err != nil {
 			return
 		}
 		err = result.err
 		return
 	}
-	err = readEncryptionKeysInquirySearchResponse(result, response.Body)
+	err = readEncryptionKeysInquirySearchResponse(result, reader)
 	if err != nil {
 		return
 	}
 	return
-}
-
-// marshall is the method used internally to marshal requests for the
-// 'search' method.
-func (r *EncryptionKeysInquirySearchRequest) marshal(writer io.Writer) error {
-	stream := helpers.NewStream(writer)
-	r.stream(stream)
-	return stream.Error
-}
-func (r *EncryptionKeysInquirySearchRequest) stream(stream *jsoniter.Stream) {
 }
 
 // EncryptionKeysInquirySearchResponse is the response for the 'search' method.

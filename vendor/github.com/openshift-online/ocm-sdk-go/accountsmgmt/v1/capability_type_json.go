@@ -21,7 +21,6 @@ package v1 // github.com/openshift-online/ocm-sdk-go/accountsmgmt/v1
 
 import (
 	"io"
-	"net/http"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/openshift-online/ocm-sdk-go/helpers"
@@ -31,7 +30,10 @@ import (
 func MarshalCapability(object *Capability, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeCapability(object, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -65,7 +67,6 @@ func writeCapability(object *Capability, stream *jsoniter.Stream) {
 		}
 		stream.WriteObjectField("value")
 		stream.WriteString(object.value)
-		count++
 	}
 	stream.WriteObjectEnd()
 }
@@ -73,9 +74,6 @@ func writeCapability(object *Capability, stream *jsoniter.Stream) {
 // UnmarshalCapability reads a value of the 'capability' type from the given
 // source, which can be an slice of bytes, a string or a reader.
 func UnmarshalCapability(source interface{}) (object *Capability, err error) {
-	if source == http.NoBody {
-		return
-	}
 	iterator, err := helpers.NewIterator(source)
 	if err != nil {
 		return
