@@ -66,6 +66,7 @@ import (
 	"github.com/openshift/assisted-service/pkg/thread"
 	"github.com/openshift/assisted-service/restapi"
 	"github.com/prometheus/client_golang/prometheus"
+	kafka "github.com/segmentio/kafka-go"
 	"github.com/sirupsen/logrus"
 	"go.elastic.co/apm/module/apmhttp"
 	"go.elastic.co/apm/module/apmlogrus"
@@ -249,6 +250,9 @@ func main() {
 	db := setupDB(log)
 	defer common.CloseDB(db)
 
+	kafkaWriter := setupKafkaWriter(log)
+	defer closeKafkaWriter(kafkaWriter)
+
 	ctrlMgr, err := createControllerManager()
 	failOnError(err, "failed to create controller manager")
 
@@ -260,7 +264,7 @@ func main() {
 	authzHandler := auth.NewAuthzHandler(&Options.Auth, ocmClient, log.WithField("pkg", "authz"), db)
 
 	crdEventsHandler := createCRDEventsHandler()
-	eventsHandler := createEventsHandler(crdEventsHandler, db, authzHandler, log)
+	eventsHandler := createEventsHandler(crdEventsHandler, db, kafkaWriter, authzHandler, log)
 
 	prometheusRegistry := prometheus.DefaultRegisterer
 	metricsManager := metrics.NewMetricsManager(prometheusRegistry, eventsHandler)
@@ -643,6 +647,18 @@ func generateAPMTransactionName(request *http.Request) string {
 	return route.Operation.ID
 }
 
+func setupKafkaWriter(log logrus.FieldLogger) *kafka.Writer {
+	return &kafka.Writer{
+		Addr:     kafka.TCP("ai-kafka.ai-kafka-headless.assisted-installer-integration.svc.cluster.local:9092"),
+		Topic:    "events",
+		Balancer: &kafka.LeastBytes{},
+	}
+}
+
+func closeKafkaWriter(writer *kafka.Writer) {
+	writer.Close()
+}
+
 func setupDB(log logrus.FieldLogger) *gorm.DB {
 	dbConnectionStr := fmt.Sprintf("host=%s port=%s user=%s database=%s password=%s sslmode=disable",
 		Options.DBConfig.Host, Options.DBConfig.Port, Options.DBConfig.User, Options.DBConfig.Name, Options.DBConfig.Pass)
@@ -768,8 +784,8 @@ func autoMigrationWithLeader(migrationLeader leader.ElectorInterface, db *gorm.D
 	})
 }
 
-func createEventsHandler(crdEventsHandler controllers.CRDEventsHandler, db *gorm.DB, authzHandler auth.Authorizer, log logrus.FieldLogger) eventsapi.Handler {
-	eventsHandler := events.New(db, authzHandler, log.WithField("pkg", "events"))
+func createEventsHandler(crdEventsHandler controllers.CRDEventsHandler, db *gorm.DB, kafkaWriter *kafka.Writer, authzHandler auth.Authorizer, log logrus.FieldLogger) eventsapi.Handler {
+	eventsHandler := events.New(db, kafkaWriter, authzHandler, log.WithField("pkg", "events"))
 
 	if crdEventsHandler != nil {
 		return controllers.NewControllerEventsWrapper(crdEventsHandler, eventsHandler, db, log)

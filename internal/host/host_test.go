@@ -675,7 +675,7 @@ var _ = Describe("cancel installation", func() {
 
 	BeforeEach(func() {
 		db, dbName = common.PrepareTestDB()
-		eventsHandler = events.New(db, nil, logrus.New())
+		eventsHandler = events.New(db, nil, nil, logrus.New())
 		dummy := &leader.DummyElector{}
 		state = NewManager(common.GetTestLog(), db, eventsHandler, nil, nil, nil, nil, defaultConfig, dummy, nil, nil, false, nil)
 		id := strfmt.UUID(uuid.New().String())
@@ -764,7 +764,7 @@ var _ = Describe("reset host", func() {
 
 	BeforeEach(func() {
 		db, dbName = common.PrepareTestDB()
-		eventsHandler = events.New(db, nil, logrus.New())
+		eventsHandler = events.New(db, nil, nil, logrus.New())
 		config = *defaultConfig
 		dummy := &leader.DummyElector{}
 		state = NewManager(common.GetTestLog(), db, eventsHandler, nil, nil, nil, nil, &config, dummy, nil, nil, false, nil)

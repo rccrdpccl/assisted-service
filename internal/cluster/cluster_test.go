@@ -1441,7 +1441,7 @@ var _ = Describe("CancelInstallation", func() {
 
 	BeforeEach(func() {
 		db, dbName = common.PrepareTestDB()
-		eventsHandler = events.New(db, nil, logrus.New())
+		eventsHandler = events.New(db, nil, nil, logrus.New())
 		ctrl = gomock.NewController(GinkgoT())
 		mockMetric = metrics.NewMockAPI(ctrl)
 		mockOperators := operators.NewMockAPI(ctrl)
@@ -1518,7 +1518,7 @@ var _ = Describe("ResetCluster", func() {
 
 	BeforeEach(func() {
 		db, dbName = common.PrepareTestDB()
-		eventsHandler = events.New(db, nil, logrus.New())
+		eventsHandler = events.New(db, nil, nil, logrus.New())
 		dummy := &leader.DummyElector{}
 		ctrl := gomock.NewController(GinkgoT())
 		mockOperators := operators.NewMockAPI(ctrl)
@@ -2552,7 +2552,7 @@ var _ = Describe("GenerateAdditionalManifests", func() {
 		mockMetric = metrics.NewMockAPI(ctrl)
 		manifestsGenerator = network.NewMockManifestsGeneratorAPI(ctrl)
 		db, dbName = common.PrepareTestDB()
-		eventsHandler = events.New(db, nil, logrus.New())
+		eventsHandler = events.New(db, nil, nil, logrus.New())
 		dummy := &leader.DummyElector{}
 		mockOperatorMgr = operators.NewMockAPI(ctrl)
 		cfg := getDefaultConfig()
@@ -2683,7 +2683,7 @@ var _ = Describe("Deregister inactive clusters", func() {
 		mockMetric = metrics.NewMockAPI(ctrl)
 		mockOperators := operators.NewMockAPI(ctrl)
 		db, dbName = common.PrepareTestDB()
-		eventsHandler = events.New(db, nil, logrus.New())
+		eventsHandler = events.New(db, nil, nil, logrus.New())
 		dummy := &leader.DummyElector{}
 		mockS3Client = s3wrapper.NewMockAPI(ctrl)
 		state = NewManager(getDefaultConfig(), common.GetTestLog(), db, eventsHandler, nil, mockMetric, nil, dummy, mockOperators, nil, mockS3Client, nil, nil)
@@ -2818,7 +2818,7 @@ var _ = Describe("Permanently delete clusters", func() {
 		mockS3Api = s3wrapper.NewMockAPI(ctrl)
 		mockOperators := operators.NewMockAPI(ctrl)
 		db, dbName = common.PrepareTestDB()
-		eventsHandler = events.New(db, nil, logrus.New())
+		eventsHandler = events.New(db, nil, nil, logrus.New())
 		dummy := &leader.DummyElector{}
 		state = NewManager(getDefaultConfig(), common.GetTestLog(), db, eventsHandler, nil, mockMetric, nil, dummy, mockOperators, nil, nil, nil, nil)
 		c1 = registerCluster()
@@ -2878,7 +2878,7 @@ var _ = Describe("Get cluster by Kube key", func() {
 		ctrl = gomock.NewController(GinkgoT())
 		mockOperators := operators.NewMockAPI(ctrl)
 		db, dbName = common.PrepareTestDB()
-		eventsHandler = events.New(db, nil, logrus.New())
+		eventsHandler = events.New(db, nil, nil, logrus.New())
 		dummy := &leader.DummyElector{}
 		state = NewManager(getDefaultConfig(), common.GetTestLog(), db, eventsHandler, nil, nil, nil, dummy, mockOperators, nil, nil, nil, nil)
 		key = types.NamespacedName{
@@ -3110,7 +3110,7 @@ var _ = Describe("Update AMS subscription ID", func() {
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		db, dbName = common.PrepareTestDB()
-		eventsHandler = events.New(db, nil, logrus.New())
+		eventsHandler = events.New(db, nil, nil, logrus.New())
 		api = NewManager(getDefaultConfig(), common.GetTestLog(), db, eventsHandler, nil, nil, nil, nil, nil, nil, nil, nil, nil)
 	})
 
