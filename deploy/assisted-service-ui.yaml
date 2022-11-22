@@ -1,0 +1,40 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: assisted-installer-ui
+  namespace: 'my-branch-123'
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 8080
+      protocol: TCP
+      # nodePort: 31000
+  selector:
+    app: assisted-installer-ui
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: assisted-installer-ui
+  namespace: 'my-branch-123'
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: assisted-installer-ui
+  template:
+    metadata:
+      labels:
+        app: assisted-installer-ui
+    spec:
+      containers:
+        - name: assisted-installer-ui
+          image: quay.io/edge-infrastructure/assisted-installer-ui:latest
+          imagePullPolicy: Always
+          env:
+            - name: ASSISTED_SERVICE_URL
+              value: 'http://assisted-service.my-branch-123.svc:8090'
+          ports:
+            - containerPort: 80
+      restartPolicy: Always
