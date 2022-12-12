@@ -31,7 +31,10 @@ import (
 func MarshalAdminCredentialsList(list []*AdminCredentials, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeAdminCredentialsList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalAdminCredentialsList(source interface{}) (items []*AdminCredential
 	return
 }
 
-// readAdminCredentialsList reads list of values of the ''admin_credentials' type from
+// readAdminCredentialsList reads list of values of the ”admin_credentials' type from
 // the given iterator.
 func readAdminCredentialsList(iterator *jsoniter.Iterator) []*AdminCredentials {
 	list := []*AdminCredentials{}

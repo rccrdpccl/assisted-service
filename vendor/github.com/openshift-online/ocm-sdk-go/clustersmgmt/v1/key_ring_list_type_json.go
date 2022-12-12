@@ -31,7 +31,10 @@ import (
 func MarshalKeyRingList(list []*KeyRing, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeKeyRingList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalKeyRingList(source interface{}) (items []*KeyRing, err error) {
 	return
 }
 
-// readKeyRingList reads list of values of the ''key_ring' type from
+// readKeyRingList reads list of values of the ”key_ring' type from
 // the given iterator.
 func readKeyRingList(iterator *jsoniter.Iterator) []*KeyRing {
 	list := []*KeyRing{}

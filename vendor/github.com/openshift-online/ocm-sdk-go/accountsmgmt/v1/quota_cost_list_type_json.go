@@ -31,7 +31,10 @@ import (
 func MarshalQuotaCostList(list []*QuotaCost, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeQuotaCostList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalQuotaCostList(source interface{}) (items []*QuotaCost, err error) 
 	return
 }
 
-// readQuotaCostList reads list of values of the ''quota_cost' type from
+// readQuotaCostList reads list of values of the ”quota_cost' type from
 // the given iterator.
 func readQuotaCostList(iterator *jsoniter.Iterator) []*QuotaCost {
 	list := []*QuotaCost{}

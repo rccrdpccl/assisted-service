@@ -31,7 +31,10 @@ import (
 func MarshalTokenAuthorizationResponseList(list []*TokenAuthorizationResponse, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeTokenAuthorizationResponseList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalTokenAuthorizationResponseList(source interface{}) (items []*Token
 	return
 }
 
-// readTokenAuthorizationResponseList reads list of values of the ''token_authorization_response' type from
+// readTokenAuthorizationResponseList reads list of values of the ”token_authorization_response' type from
 // the given iterator.
 func readTokenAuthorizationResponseList(iterator *jsoniter.Iterator) []*TokenAuthorizationResponse {
 	list := []*TokenAuthorizationResponse{}

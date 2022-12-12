@@ -31,7 +31,10 @@ import (
 func MarshalSeverityList(list []Severity, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeSeverityList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalSeverityList(source interface{}) (items []Severity, err error) {
 	return
 }
 
-// readSeverityList reads list of values of the ''severity' type from
+// readSeverityList reads list of values of the ”severity' type from
 // the given iterator.
 func readSeverityList(iterator *jsoniter.Iterator) []Severity {
 	list := []Severity{}

@@ -31,7 +31,10 @@ import (
 func MarshalFeatureReviewResponseList(list []*FeatureReviewResponse, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeFeatureReviewResponseList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalFeatureReviewResponseList(source interface{}) (items []*FeatureRev
 	return
 }
 
-// readFeatureReviewResponseList reads list of values of the ''feature_review_response' type from
+// readFeatureReviewResponseList reads list of values of the ”feature_review_response' type from
 // the given iterator.
 func readFeatureReviewResponseList(iterator *jsoniter.Iterator) []*FeatureReviewResponse {
 	list := []*FeatureReviewResponse{}

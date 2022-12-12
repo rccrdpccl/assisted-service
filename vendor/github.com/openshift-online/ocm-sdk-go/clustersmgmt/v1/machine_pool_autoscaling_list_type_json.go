@@ -31,7 +31,10 @@ import (
 func MarshalMachinePoolAutoscalingList(list []*MachinePoolAutoscaling, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeMachinePoolAutoscalingList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalMachinePoolAutoscalingList(source interface{}) (items []*MachinePo
 	return
 }
 
-// readMachinePoolAutoscalingList reads list of values of the ''machine_pool_autoscaling' type from
+// readMachinePoolAutoscalingList reads list of values of the ”machine_pool_autoscaling' type from
 // the given iterator.
 func readMachinePoolAutoscalingList(iterator *jsoniter.Iterator) []*MachinePoolAutoscaling {
 	list := []*MachinePoolAutoscaling{}

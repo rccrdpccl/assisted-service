@@ -31,7 +31,10 @@ import (
 func MarshalLabelList(list []*Label, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeLabelList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalLabelList(source interface{}) (items []*Label, err error) {
 	return
 }
 
-// readLabelList reads list of values of the ''label' type from
+// readLabelList reads list of values of the ”label' type from
 // the given iterator.
 func readLabelList(iterator *jsoniter.Iterator) []*Label {
 	list := []*Label{}

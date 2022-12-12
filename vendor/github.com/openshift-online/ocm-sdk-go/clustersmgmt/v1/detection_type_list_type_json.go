@@ -31,7 +31,10 @@ import (
 func MarshalDetectionTypeList(list []DetectionType, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeDetectionTypeList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalDetectionTypeList(source interface{}) (items []DetectionType, err 
 	return
 }
 
-// readDetectionTypeList reads list of values of the ''detection_type' type from
+// readDetectionTypeList reads list of values of the ”detection_type' type from
 // the given iterator.
 func readDetectionTypeList(iterator *jsoniter.Iterator) []DetectionType {
 	list := []DetectionType{}

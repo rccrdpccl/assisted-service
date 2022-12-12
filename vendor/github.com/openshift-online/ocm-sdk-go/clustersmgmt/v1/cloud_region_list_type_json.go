@@ -31,7 +31,10 @@ import (
 func MarshalCloudRegionList(list []*CloudRegion, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeCloudRegionList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalCloudRegionList(source interface{}) (items []*CloudRegion, err err
 	return
 }
 
-// readCloudRegionList reads list of values of the ''cloud_region' type from
+// readCloudRegionList reads list of values of the ”cloud_region' type from
 // the given iterator.
 func readCloudRegionList(iterator *jsoniter.Iterator) []*CloudRegion {
 	list := []*CloudRegion{}

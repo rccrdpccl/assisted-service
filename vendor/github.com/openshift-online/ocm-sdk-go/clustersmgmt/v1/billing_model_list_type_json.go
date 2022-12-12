@@ -31,7 +31,10 @@ import (
 func MarshalBillingModelList(list []BillingModel, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeBillingModelList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalBillingModelList(source interface{}) (items []BillingModel, err er
 	return
 }
 
-// readBillingModelList reads list of values of the ''billing_model' type from
+// readBillingModelList reads list of values of the ”billing_model' type from
 // the given iterator.
 func readBillingModelList(iterator *jsoniter.Iterator) []BillingModel {
 	list := []BillingModel{}

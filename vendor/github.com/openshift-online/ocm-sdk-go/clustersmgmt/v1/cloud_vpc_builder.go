@@ -23,9 +23,11 @@ package v1 // github.com/openshift-online/ocm-sdk-go/clustersmgmt/v1
 //
 // Description of a cloud provider virtual private cloud.
 type CloudVPCBuilder struct {
-	bitmap_ uint32
-	name    string
-	subnets []string
+	bitmap_    uint32
+	awsSubnets []*SubnetworkBuilder
+	id         string
+	name       string
+	subnets    []string
 }
 
 // NewCloudVPC creates a new builder of 'cloud_VPC' objects.
@@ -33,22 +35,38 @@ func NewCloudVPC() *CloudVPCBuilder {
 	return &CloudVPCBuilder{}
 }
 
-// Name sets the value of the 'name' attribute to the given value.
-//
-//
-func (b *CloudVPCBuilder) Name(value string) *CloudVPCBuilder {
-	b.name = value
+// Empty returns true if the builder is empty, i.e. no attribute has a value.
+func (b *CloudVPCBuilder) Empty() bool {
+	return b == nil || b.bitmap_ == 0
+}
+
+// AWSSubnets sets the value of the 'AWS_subnets' attribute to the given values.
+func (b *CloudVPCBuilder) AWSSubnets(values ...*SubnetworkBuilder) *CloudVPCBuilder {
+	b.awsSubnets = make([]*SubnetworkBuilder, len(values))
+	copy(b.awsSubnets, values)
 	b.bitmap_ |= 1
 	return b
 }
 
+// ID sets the value of the 'ID' attribute to the given value.
+func (b *CloudVPCBuilder) ID(value string) *CloudVPCBuilder {
+	b.id = value
+	b.bitmap_ |= 2
+	return b
+}
+
+// Name sets the value of the 'name' attribute to the given value.
+func (b *CloudVPCBuilder) Name(value string) *CloudVPCBuilder {
+	b.name = value
+	b.bitmap_ |= 4
+	return b
+}
+
 // Subnets sets the value of the 'subnets' attribute to the given values.
-//
-//
 func (b *CloudVPCBuilder) Subnets(values ...string) *CloudVPCBuilder {
 	b.subnets = make([]string, len(values))
 	copy(b.subnets, values)
-	b.bitmap_ |= 2
+	b.bitmap_ |= 8
 	return b
 }
 
@@ -58,6 +76,15 @@ func (b *CloudVPCBuilder) Copy(object *CloudVPC) *CloudVPCBuilder {
 		return b
 	}
 	b.bitmap_ = object.bitmap_
+	if object.awsSubnets != nil {
+		b.awsSubnets = make([]*SubnetworkBuilder, len(object.awsSubnets))
+		for i, v := range object.awsSubnets {
+			b.awsSubnets[i] = NewSubnetwork().Copy(v)
+		}
+	} else {
+		b.awsSubnets = nil
+	}
+	b.id = object.id
 	b.name = object.name
 	if object.subnets != nil {
 		b.subnets = make([]string, len(object.subnets))
@@ -72,6 +99,16 @@ func (b *CloudVPCBuilder) Copy(object *CloudVPC) *CloudVPCBuilder {
 func (b *CloudVPCBuilder) Build() (object *CloudVPC, err error) {
 	object = new(CloudVPC)
 	object.bitmap_ = b.bitmap_
+	if b.awsSubnets != nil {
+		object.awsSubnets = make([]*Subnetwork, len(b.awsSubnets))
+		for i, v := range b.awsSubnets {
+			object.awsSubnets[i], err = v.Build()
+			if err != nil {
+				return
+			}
+		}
+	}
+	object.id = b.id
 	object.name = b.name
 	if b.subnets != nil {
 		object.subnets = make([]string, len(b.subnets))

@@ -31,7 +31,10 @@ import (
 func MarshalEncryptionKeyList(list []*EncryptionKey, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeEncryptionKeyList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalEncryptionKeyList(source interface{}) (items []*EncryptionKey, err
 	return
 }
 
-// readEncryptionKeyList reads list of values of the ''encryption_key' type from
+// readEncryptionKeyList reads list of values of the ”encryption_key' type from
 // the given iterator.
 func readEncryptionKeyList(iterator *jsoniter.Iterator) []*EncryptionKey {
 	list := []*EncryptionKey{}
