@@ -31,7 +31,10 @@ import (
 func MarshalExternalConfigurationList(list []*ExternalConfiguration, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeExternalConfigurationList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalExternalConfigurationList(source interface{}) (items []*ExternalCo
 	return
 }
 
-// readExternalConfigurationList reads list of values of the ''external_configuration' type from
+// readExternalConfigurationList reads list of values of the ”external_configuration' type from
 // the given iterator.
 func readExternalConfigurationList(iterator *jsoniter.Iterator) []*ExternalConfiguration {
 	list := []*ExternalConfiguration{}

@@ -31,7 +31,10 @@ import (
 func MarshalSocketTotalsNodeRoleOSMetricNodeList(list []*SocketTotalsNodeRoleOSMetricNode, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeSocketTotalsNodeRoleOSMetricNodeList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalSocketTotalsNodeRoleOSMetricNodeList(source interface{}) (items []
 	return
 }
 
-// readSocketTotalsNodeRoleOSMetricNodeList reads list of values of the ''socket_totals_node_role_OS_metric_node' type from
+// readSocketTotalsNodeRoleOSMetricNodeList reads list of values of the ”socket_totals_node_role_OS_metric_node' type from
 // the given iterator.
 func readSocketTotalsNodeRoleOSMetricNodeList(iterator *jsoniter.Iterator) []*SocketTotalsNodeRoleOSMetricNode {
 	list := []*SocketTotalsNodeRoleOSMetricNode{}

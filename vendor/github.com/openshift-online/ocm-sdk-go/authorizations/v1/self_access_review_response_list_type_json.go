@@ -31,7 +31,10 @@ import (
 func MarshalSelfAccessReviewResponseList(list []*SelfAccessReviewResponse, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeSelfAccessReviewResponseList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalSelfAccessReviewResponseList(source interface{}) (items []*SelfAcc
 	return
 }
 
-// readSelfAccessReviewResponseList reads list of values of the ''self_access_review_response' type from
+// readSelfAccessReviewResponseList reads list of values of the ”self_access_review_response' type from
 // the given iterator.
 func readSelfAccessReviewResponseList(iterator *jsoniter.Iterator) []*SelfAccessReviewResponse {
 	list := []*SelfAccessReviewResponse{}

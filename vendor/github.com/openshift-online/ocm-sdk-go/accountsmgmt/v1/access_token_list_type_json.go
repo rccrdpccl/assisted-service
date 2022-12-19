@@ -31,7 +31,10 @@ import (
 func MarshalAccessTokenList(list []*AccessToken, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeAccessTokenList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalAccessTokenList(source interface{}) (items []*AccessToken, err err
 	return
 }
 
-// readAccessTokenList reads list of values of the ''access_token' type from
+// readAccessTokenList reads list of values of the ”access_token' type from
 // the given iterator.
 func readAccessTokenList(iterator *jsoniter.Iterator) []*AccessToken {
 	list := []*AccessToken{}

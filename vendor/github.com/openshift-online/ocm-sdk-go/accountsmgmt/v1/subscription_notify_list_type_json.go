@@ -31,7 +31,10 @@ import (
 func MarshalSubscriptionNotifyList(list []*SubscriptionNotify, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeSubscriptionNotifyList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalSubscriptionNotifyList(source interface{}) (items []*SubscriptionN
 	return
 }
 
-// readSubscriptionNotifyList reads list of values of the ''subscription_notify' type from
+// readSubscriptionNotifyList reads list of values of the ”subscription_notify' type from
 // the given iterator.
 func readSubscriptionNotifyList(iterator *jsoniter.Iterator) []*SubscriptionNotify {
 	list := []*SubscriptionNotify{}

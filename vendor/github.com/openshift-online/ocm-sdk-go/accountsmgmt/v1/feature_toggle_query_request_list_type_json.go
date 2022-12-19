@@ -31,7 +31,10 @@ import (
 func MarshalFeatureToggleQueryRequestList(list []*FeatureToggleQueryRequest, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeFeatureToggleQueryRequestList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalFeatureToggleQueryRequestList(source interface{}) (items []*Featur
 	return
 }
 
-// readFeatureToggleQueryRequestList reads list of values of the ''feature_toggle_query_request' type from
+// readFeatureToggleQueryRequestList reads list of values of the ”feature_toggle_query_request' type from
 // the given iterator.
 func readFeatureToggleQueryRequestList(iterator *jsoniter.Iterator) []*FeatureToggleQueryRequest {
 	list := []*FeatureToggleQueryRequest{}

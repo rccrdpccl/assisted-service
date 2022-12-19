@@ -31,7 +31,10 @@ import (
 func MarshalCloudVPCList(list []*CloudVPC, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeCloudVPCList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalCloudVPCList(source interface{}) (items []*CloudVPC, err error) {
 	return
 }
 
-// readCloudVPCList reads list of values of the ''cloud_VPC' type from
+// readCloudVPCList reads list of values of the ”cloud_VPC' type from
 // the given iterator.
 func readCloudVPCList(iterator *jsoniter.Iterator) []*CloudVPC {
 	list := []*CloudVPC{}

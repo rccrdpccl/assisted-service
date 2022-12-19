@@ -31,7 +31,10 @@ import (
 func MarshalFlavourNodesList(list []*FlavourNodes, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeFlavourNodesList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalFlavourNodesList(source interface{}) (items []*FlavourNodes, err e
 	return
 }
 
-// readFlavourNodesList reads list of values of the ''flavour_nodes' type from
+// readFlavourNodesList reads list of values of the ”flavour_nodes' type from
 // the given iterator.
 func readFlavourNodesList(iterator *jsoniter.Iterator) []*FlavourNodes {
 	list := []*FlavourNodes{}

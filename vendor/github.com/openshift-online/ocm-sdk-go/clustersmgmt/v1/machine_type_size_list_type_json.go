@@ -31,7 +31,10 @@ import (
 func MarshalMachineTypeSizeList(list []MachineTypeSize, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeMachineTypeSizeList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalMachineTypeSizeList(source interface{}) (items []MachineTypeSize, 
 	return
 }
 
-// readMachineTypeSizeList reads list of values of the ''machine_type_size' type from
+// readMachineTypeSizeList reads list of values of the ”machine_type_size' type from
 // the given iterator.
 func readMachineTypeSizeList(iterator *jsoniter.Iterator) []MachineTypeSize {
 	list := []MachineTypeSize{}

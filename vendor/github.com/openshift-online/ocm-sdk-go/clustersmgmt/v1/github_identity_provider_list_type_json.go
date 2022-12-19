@@ -31,7 +31,10 @@ import (
 func MarshalGithubIdentityProviderList(list []*GithubIdentityProvider, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeGithubIdentityProviderList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalGithubIdentityProviderList(source interface{}) (items []*GithubIde
 	return
 }
 
-// readGithubIdentityProviderList reads list of values of the ''github_identity_provider' type from
+// readGithubIdentityProviderList reads list of values of the ”github_identity_provider' type from
 // the given iterator.
 func readGithubIdentityProviderList(iterator *jsoniter.Iterator) []*GithubIdentityProvider {
 	list := []*GithubIdentityProvider{}

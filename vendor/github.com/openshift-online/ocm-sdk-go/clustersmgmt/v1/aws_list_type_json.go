@@ -31,7 +31,10 @@ import (
 func MarshalAWSList(list []*AWS, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeAWSList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalAWSList(source interface{}) (items []*AWS, err error) {
 	return
 }
 
-// readAWSList reads list of values of the ''AWS' type from
+// readAWSList reads list of values of the ”AWS' type from
 // the given iterator.
 func readAWSList(iterator *jsoniter.Iterator) []*AWS {
 	list := []*AWS{}

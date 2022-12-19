@@ -21,7 +21,6 @@ package v1 // github.com/openshift-online/ocm-sdk-go/accountsmgmt/v1
 
 import (
 	"io"
-	"net/http"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/openshift-online/ocm-sdk-go/helpers"
@@ -31,7 +30,10 @@ import (
 func MarshalClusterRegistrationResponse(object *ClusterRegistrationResponse, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeClusterRegistrationResponse(object, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -74,7 +76,6 @@ func writeClusterRegistrationResponse(object *ClusterRegistrationResponse, strea
 		}
 		stream.WriteObjectField("expires_at")
 		stream.WriteString(object.expiresAt)
-		count++
 	}
 	stream.WriteObjectEnd()
 }
@@ -82,9 +83,6 @@ func writeClusterRegistrationResponse(object *ClusterRegistrationResponse, strea
 // UnmarshalClusterRegistrationResponse reads a value of the 'cluster_registration_response' type from the given
 // source, which can be an slice of bytes, a string or a reader.
 func UnmarshalClusterRegistrationResponse(source interface{}) (object *ClusterRegistrationResponse, err error) {
-	if source == http.NoBody {
-		return
-	}
 	iterator, err := helpers.NewIterator(source)
 	if err != nil {
 		return

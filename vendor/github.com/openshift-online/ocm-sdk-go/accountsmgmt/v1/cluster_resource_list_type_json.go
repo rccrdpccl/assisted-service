@@ -31,7 +31,10 @@ import (
 func MarshalClusterResourceList(list []*ClusterResource, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeClusterResourceList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalClusterResourceList(source interface{}) (items []*ClusterResource,
 	return
 }
 
-// readClusterResourceList reads list of values of the ''cluster_resource' type from
+// readClusterResourceList reads list of values of the ”cluster_resource' type from
 // the given iterator.
 func readClusterResourceList(iterator *jsoniter.Iterator) []*ClusterResource {
 	list := []*ClusterResource{}
