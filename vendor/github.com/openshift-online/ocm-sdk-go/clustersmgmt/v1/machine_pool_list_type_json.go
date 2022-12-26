@@ -31,7 +31,10 @@ import (
 func MarshalMachinePoolList(list []*MachinePool, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeMachinePoolList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalMachinePoolList(source interface{}) (items []*MachinePool, err err
 	return
 }
 
-// readMachinePoolList reads list of values of the ''machine_pool' type from
+// readMachinePoolList reads list of values of the ”machine_pool' type from
 // the given iterator.
 func readMachinePoolList(iterator *jsoniter.Iterator) []*MachinePool {
 	list := []*MachinePool{}

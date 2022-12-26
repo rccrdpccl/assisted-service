@@ -31,7 +31,10 @@ import (
 func MarshalClusterStatusList(list []*ClusterStatus, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeClusterStatusList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalClusterStatusList(source interface{}) (items []*ClusterStatus, err
 	return
 }
 
-// readClusterStatusList reads list of values of the ''cluster_status' type from
+// readClusterStatusList reads list of values of the ”cluster_status' type from
 // the given iterator.
 func readClusterStatusList(iterator *jsoniter.Iterator) []*ClusterStatus {
 	list := []*ClusterStatus{}

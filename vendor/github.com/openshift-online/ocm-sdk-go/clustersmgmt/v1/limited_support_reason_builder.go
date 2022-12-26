@@ -62,9 +62,12 @@ func (b *LimitedSupportReasonBuilder) HREF(value string) *LimitedSupportReasonBu
 	return b
 }
 
+// Empty returns true if the builder is empty, i.e. no attribute has a value.
+func (b *LimitedSupportReasonBuilder) Empty() bool {
+	return b == nil || b.bitmap_&^1 == 0
+}
+
 // CreationTimestamp sets the value of the 'creation_timestamp' attribute to the given value.
-//
-//
 func (b *LimitedSupportReasonBuilder) CreationTimestamp(value time.Time) *LimitedSupportReasonBuilder {
 	b.creationTimestamp = value
 	b.bitmap_ |= 8
@@ -72,8 +75,6 @@ func (b *LimitedSupportReasonBuilder) CreationTimestamp(value time.Time) *Limite
 }
 
 // Details sets the value of the 'details' attribute to the given value.
-//
-//
 func (b *LimitedSupportReasonBuilder) Details(value string) *LimitedSupportReasonBuilder {
 	b.details = value
 	b.bitmap_ |= 16
@@ -81,8 +82,6 @@ func (b *LimitedSupportReasonBuilder) Details(value string) *LimitedSupportReaso
 }
 
 // DetectionType sets the value of the 'detection_type' attribute to the given value.
-//
-//
 func (b *LimitedSupportReasonBuilder) DetectionType(value DetectionType) *LimitedSupportReasonBuilder {
 	b.detectionType = value
 	b.bitmap_ |= 32
@@ -90,8 +89,6 @@ func (b *LimitedSupportReasonBuilder) DetectionType(value DetectionType) *Limite
 }
 
 // Summary sets the value of the 'summary' attribute to the given value.
-//
-//
 func (b *LimitedSupportReasonBuilder) Summary(value string) *LimitedSupportReasonBuilder {
 	b.summary = value
 	b.bitmap_ |= 64

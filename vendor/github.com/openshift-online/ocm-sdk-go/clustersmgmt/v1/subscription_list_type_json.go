@@ -31,7 +31,10 @@ import (
 func MarshalSubscriptionList(list []*Subscription, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeSubscriptionList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalSubscriptionList(source interface{}) (items []*Subscription, err e
 	return
 }
 
-// readSubscriptionList reads list of values of the ''subscription' type from
+// readSubscriptionList reads list of values of the ”subscription' type from
 // the given iterator.
 func readSubscriptionList(iterator *jsoniter.Iterator) []*Subscription {
 	list := []*Subscription{}

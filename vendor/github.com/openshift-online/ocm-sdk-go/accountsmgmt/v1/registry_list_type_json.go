@@ -31,7 +31,10 @@ import (
 func MarshalRegistryList(list []*Registry, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeRegistryList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalRegistryList(source interface{}) (items []*Registry, err error) {
 	return
 }
 
-// readRegistryList reads list of values of the ''registry' type from
+// readRegistryList reads list of values of the ”registry' type from
 // the given iterator.
 func readRegistryList(iterator *jsoniter.Iterator) []*Registry {
 	list := []*Registry{}

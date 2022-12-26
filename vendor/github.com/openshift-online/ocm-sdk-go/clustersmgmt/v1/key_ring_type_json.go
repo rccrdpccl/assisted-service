@@ -21,7 +21,6 @@ package v1 // github.com/openshift-online/ocm-sdk-go/clustersmgmt/v1
 
 import (
 	"io"
-	"net/http"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/openshift-online/ocm-sdk-go/helpers"
@@ -31,7 +30,10 @@ import (
 func MarshalKeyRing(object *KeyRing, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeKeyRing(object, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -70,7 +72,6 @@ func writeKeyRing(object *KeyRing, stream *jsoniter.Stream) {
 		}
 		stream.WriteObjectField("name")
 		stream.WriteString(object.name)
-		count++
 	}
 	stream.WriteObjectEnd()
 }
@@ -78,9 +79,6 @@ func writeKeyRing(object *KeyRing, stream *jsoniter.Stream) {
 // UnmarshalKeyRing reads a value of the 'key_ring' type from the given
 // source, which can be an slice of bytes, a string or a reader.
 func UnmarshalKeyRing(source interface{}) (object *KeyRing, err error) {
-	if source == http.NoBody {
-		return
-	}
 	iterator, err := helpers.NewIterator(source)
 	if err != nil {
 		return

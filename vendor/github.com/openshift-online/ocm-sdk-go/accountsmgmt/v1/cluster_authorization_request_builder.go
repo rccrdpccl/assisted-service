@@ -20,8 +20,6 @@ limitations under the License.
 package v1 // github.com/openshift-online/ocm-sdk-go/accountsmgmt/v1
 
 // ClusterAuthorizationRequestBuilder contains the data and logic needed to build 'cluster_authorization_request' objects.
-//
-//
 type ClusterAuthorizationRequestBuilder struct {
 	bitmap_           uint32
 	accountUsername   string
@@ -33,6 +31,7 @@ type ClusterAuthorizationRequestBuilder struct {
 	externalClusterID string
 	productID         string
 	productCategory   string
+	quotaVersion      string
 	resources         []*ReservedResourceBuilder
 	byoc              bool
 	disconnected      bool
@@ -45,9 +44,12 @@ func NewClusterAuthorizationRequest() *ClusterAuthorizationRequestBuilder {
 	return &ClusterAuthorizationRequestBuilder{}
 }
 
+// Empty returns true if the builder is empty, i.e. no attribute has a value.
+func (b *ClusterAuthorizationRequestBuilder) Empty() bool {
+	return b == nil || b.bitmap_ == 0
+}
+
 // BYOC sets the value of the 'BYOC' attribute to the given value.
-//
-//
 func (b *ClusterAuthorizationRequestBuilder) BYOC(value bool) *ClusterAuthorizationRequestBuilder {
 	b.byoc = value
 	b.bitmap_ |= 1
@@ -55,8 +57,6 @@ func (b *ClusterAuthorizationRequestBuilder) BYOC(value bool) *ClusterAuthorizat
 }
 
 // AccountUsername sets the value of the 'account_username' attribute to the given value.
-//
-//
 func (b *ClusterAuthorizationRequestBuilder) AccountUsername(value string) *ClusterAuthorizationRequestBuilder {
 	b.accountUsername = value
 	b.bitmap_ |= 2
@@ -64,8 +64,6 @@ func (b *ClusterAuthorizationRequestBuilder) AccountUsername(value string) *Clus
 }
 
 // AvailabilityZone sets the value of the 'availability_zone' attribute to the given value.
-//
-//
 func (b *ClusterAuthorizationRequestBuilder) AvailabilityZone(value string) *ClusterAuthorizationRequestBuilder {
 	b.availabilityZone = value
 	b.bitmap_ |= 4
@@ -73,8 +71,6 @@ func (b *ClusterAuthorizationRequestBuilder) AvailabilityZone(value string) *Clu
 }
 
 // CloudAccountID sets the value of the 'cloud_account_ID' attribute to the given value.
-//
-//
 func (b *ClusterAuthorizationRequestBuilder) CloudAccountID(value string) *ClusterAuthorizationRequestBuilder {
 	b.cloudAccountID = value
 	b.bitmap_ |= 8
@@ -82,8 +78,6 @@ func (b *ClusterAuthorizationRequestBuilder) CloudAccountID(value string) *Clust
 }
 
 // CloudProviderID sets the value of the 'cloud_provider_ID' attribute to the given value.
-//
-//
 func (b *ClusterAuthorizationRequestBuilder) CloudProviderID(value string) *ClusterAuthorizationRequestBuilder {
 	b.cloudProviderID = value
 	b.bitmap_ |= 16
@@ -91,8 +85,6 @@ func (b *ClusterAuthorizationRequestBuilder) CloudProviderID(value string) *Clus
 }
 
 // ClusterID sets the value of the 'cluster_ID' attribute to the given value.
-//
-//
 func (b *ClusterAuthorizationRequestBuilder) ClusterID(value string) *ClusterAuthorizationRequestBuilder {
 	b.clusterID = value
 	b.bitmap_ |= 32
@@ -100,8 +92,6 @@ func (b *ClusterAuthorizationRequestBuilder) ClusterID(value string) *ClusterAut
 }
 
 // Disconnected sets the value of the 'disconnected' attribute to the given value.
-//
-//
 func (b *ClusterAuthorizationRequestBuilder) Disconnected(value bool) *ClusterAuthorizationRequestBuilder {
 	b.disconnected = value
 	b.bitmap_ |= 64
@@ -109,8 +99,6 @@ func (b *ClusterAuthorizationRequestBuilder) Disconnected(value bool) *ClusterAu
 }
 
 // DisplayName sets the value of the 'display_name' attribute to the given value.
-//
-//
 func (b *ClusterAuthorizationRequestBuilder) DisplayName(value string) *ClusterAuthorizationRequestBuilder {
 	b.displayName = value
 	b.bitmap_ |= 128
@@ -118,8 +106,6 @@ func (b *ClusterAuthorizationRequestBuilder) DisplayName(value string) *ClusterA
 }
 
 // ExternalClusterID sets the value of the 'external_cluster_ID' attribute to the given value.
-//
-//
 func (b *ClusterAuthorizationRequestBuilder) ExternalClusterID(value string) *ClusterAuthorizationRequestBuilder {
 	b.externalClusterID = value
 	b.bitmap_ |= 256
@@ -127,8 +113,6 @@ func (b *ClusterAuthorizationRequestBuilder) ExternalClusterID(value string) *Cl
 }
 
 // Managed sets the value of the 'managed' attribute to the given value.
-//
-//
 func (b *ClusterAuthorizationRequestBuilder) Managed(value bool) *ClusterAuthorizationRequestBuilder {
 	b.managed = value
 	b.bitmap_ |= 512
@@ -136,8 +120,6 @@ func (b *ClusterAuthorizationRequestBuilder) Managed(value bool) *ClusterAuthori
 }
 
 // ProductID sets the value of the 'product_ID' attribute to the given value.
-//
-//
 func (b *ClusterAuthorizationRequestBuilder) ProductID(value string) *ClusterAuthorizationRequestBuilder {
 	b.productID = value
 	b.bitmap_ |= 1024
@@ -145,30 +127,31 @@ func (b *ClusterAuthorizationRequestBuilder) ProductID(value string) *ClusterAut
 }
 
 // ProductCategory sets the value of the 'product_category' attribute to the given value.
-//
-//
 func (b *ClusterAuthorizationRequestBuilder) ProductCategory(value string) *ClusterAuthorizationRequestBuilder {
 	b.productCategory = value
 	b.bitmap_ |= 2048
 	return b
 }
 
-// Reserve sets the value of the 'reserve' attribute to the given value.
-//
-//
-func (b *ClusterAuthorizationRequestBuilder) Reserve(value bool) *ClusterAuthorizationRequestBuilder {
-	b.reserve = value
+// QuotaVersion sets the value of the 'quota_version' attribute to the given value.
+func (b *ClusterAuthorizationRequestBuilder) QuotaVersion(value string) *ClusterAuthorizationRequestBuilder {
+	b.quotaVersion = value
 	b.bitmap_ |= 4096
 	return b
 }
 
+// Reserve sets the value of the 'reserve' attribute to the given value.
+func (b *ClusterAuthorizationRequestBuilder) Reserve(value bool) *ClusterAuthorizationRequestBuilder {
+	b.reserve = value
+	b.bitmap_ |= 8192
+	return b
+}
+
 // Resources sets the value of the 'resources' attribute to the given values.
-//
-//
 func (b *ClusterAuthorizationRequestBuilder) Resources(values ...*ReservedResourceBuilder) *ClusterAuthorizationRequestBuilder {
 	b.resources = make([]*ReservedResourceBuilder, len(values))
 	copy(b.resources, values)
-	b.bitmap_ |= 8192
+	b.bitmap_ |= 16384
 	return b
 }
 
@@ -190,6 +173,7 @@ func (b *ClusterAuthorizationRequestBuilder) Copy(object *ClusterAuthorizationRe
 	b.managed = object.managed
 	b.productID = object.productID
 	b.productCategory = object.productCategory
+	b.quotaVersion = object.quotaVersion
 	b.reserve = object.reserve
 	if object.resources != nil {
 		b.resources = make([]*ReservedResourceBuilder, len(object.resources))
@@ -218,6 +202,7 @@ func (b *ClusterAuthorizationRequestBuilder) Build() (object *ClusterAuthorizati
 	object.managed = b.managed
 	object.productID = b.productID
 	object.productCategory = b.productCategory
+	object.quotaVersion = b.quotaVersion
 	object.reserve = b.reserve
 	if b.resources != nil {
 		object.resources = make([]*ReservedResource, len(b.resources))

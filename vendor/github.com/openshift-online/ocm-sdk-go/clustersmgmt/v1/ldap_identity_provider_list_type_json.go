@@ -31,7 +31,10 @@ import (
 func MarshalLDAPIdentityProviderList(list []*LDAPIdentityProvider, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeLDAPIdentityProviderList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalLDAPIdentityProviderList(source interface{}) (items []*LDAPIdentit
 	return
 }
 
-// readLDAPIdentityProviderList reads list of values of the ''LDAP_identity_provider' type from
+// readLDAPIdentityProviderList reads list of values of the ”LDAP_identity_provider' type from
 // the given iterator.
 func readLDAPIdentityProviderList(iterator *jsoniter.Iterator) []*LDAPIdentityProvider {
 	list := []*LDAPIdentityProvider{}

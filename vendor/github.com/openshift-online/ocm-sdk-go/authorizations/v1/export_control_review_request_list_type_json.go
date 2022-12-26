@@ -31,7 +31,10 @@ import (
 func MarshalExportControlReviewRequestList(list []*ExportControlReviewRequest, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeExportControlReviewRequestList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalExportControlReviewRequestList(source interface{}) (items []*Expor
 	return
 }
 
-// readExportControlReviewRequestList reads list of values of the ''export_control_review_request' type from
+// readExportControlReviewRequestList reads list of values of the ”export_control_review_request' type from
 // the given iterator.
 func readExportControlReviewRequestList(iterator *jsoniter.Iterator) []*ExportControlReviewRequest {
 	list := []*ExportControlReviewRequest{}

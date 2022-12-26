@@ -31,7 +31,10 @@ import (
 func MarshalRelatedResourceList(list []*RelatedResource, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeRelatedResourceList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalRelatedResourceList(source interface{}) (items []*RelatedResource,
 	return
 }
 
-// readRelatedResourceList reads list of values of the ''related_resource' type from
+// readRelatedResourceList reads list of values of the ”related_resource' type from
 // the given iterator.
 func readRelatedResourceList(iterator *jsoniter.Iterator) []*RelatedResource {
 	list := []*RelatedResource{}

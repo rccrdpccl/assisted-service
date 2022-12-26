@@ -31,7 +31,10 @@ import (
 func MarshalAWSSpotMarketOptionsList(list []*AWSSpotMarketOptions, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeAWSSpotMarketOptionsList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalAWSSpotMarketOptionsList(source interface{}) (items []*AWSSpotMark
 	return
 }
 
-// readAWSSpotMarketOptionsList reads list of values of the ''AWS_spot_market_options' type from
+// readAWSSpotMarketOptionsList reads list of values of the ”AWS_spot_market_options' type from
 // the given iterator.
 func readAWSSpotMarketOptionsList(iterator *jsoniter.Iterator) []*AWSSpotMarketOptions {
 	list := []*AWSSpotMarketOptions{}

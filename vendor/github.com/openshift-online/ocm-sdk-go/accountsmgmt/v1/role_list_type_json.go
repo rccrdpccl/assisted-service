@@ -31,7 +31,10 @@ import (
 func MarshalRoleList(list []*Role, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeRoleList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalRoleList(source interface{}) (items []*Role, err error) {
 	return
 }
 
-// readRoleList reads list of values of the ''role' type from
+// readRoleList reads list of values of the ”role' type from
 // the given iterator.
 func readRoleList(iterator *jsoniter.Iterator) []*Role {
 	list := []*Role{}

@@ -31,7 +31,10 @@ import (
 func MarshalClusterConsoleList(list []*ClusterConsole, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeClusterConsoleList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalClusterConsoleList(source interface{}) (items []*ClusterConsole, e
 	return
 }
 
-// readClusterConsoleList reads list of values of the ''cluster_console' type from
+// readClusterConsoleList reads list of values of the ”cluster_console' type from
 // the given iterator.
 func readClusterConsoleList(iterator *jsoniter.Iterator) []*ClusterConsole {
 	list := []*ClusterConsole{}

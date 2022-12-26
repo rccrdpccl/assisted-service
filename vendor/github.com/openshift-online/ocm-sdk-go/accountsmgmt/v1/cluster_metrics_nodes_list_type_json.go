@@ -31,7 +31,10 @@ import (
 func MarshalClusterMetricsNodesList(list []*ClusterMetricsNodes, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeClusterMetricsNodesList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalClusterMetricsNodesList(source interface{}) (items []*ClusterMetri
 	return
 }
 
-// readClusterMetricsNodesList reads list of values of the ''cluster_metrics_nodes' type from
+// readClusterMetricsNodesList reads list of values of the ”cluster_metrics_nodes' type from
 // the given iterator.
 func readClusterMetricsNodesList(iterator *jsoniter.Iterator) []*ClusterMetricsNodes {
 	list := []*ClusterMetricsNodes{}

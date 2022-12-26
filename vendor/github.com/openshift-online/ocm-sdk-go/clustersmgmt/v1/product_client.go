@@ -20,7 +20,9 @@ limitations under the License.
 package v1 // github.com/openshift-online/ocm-sdk-go/clustersmgmt/v1
 
 import (
+	"bufio"
 	"context"
+	"io"
 	"net/http"
 	"net/url"
 	"time"
@@ -156,16 +158,12 @@ func (r *ProductPollResponse) Error() *errors.Error {
 }
 
 // Body returns the value of the 'body' parameter.
-//
-//
 func (r *ProductPollResponse) Body() *Product {
 	return r.response.Body()
 }
 
 // GetBody returns the value of the 'body' parameter and
 // a flag indicating if the parameter has a value.
-//
-//
 func (r *ProductPollResponse) GetBody() (value *Product, ok bool) {
 	return r.response.GetBody()
 }
@@ -195,6 +193,13 @@ func (r *ProductGetRequest) Parameter(name string, value interface{}) *ProductGe
 // Header adds a request header.
 func (r *ProductGetRequest) Header(name string, value interface{}) *ProductGetRequest {
 	helpers.AddHeader(&r.header, name, value)
+	return r
+}
+
+// Impersonate wraps requests on behalf of another user.
+// Note: Services that do not support this feature may silently ignore this call.
+func (r *ProductGetRequest) Impersonate(user string) *ProductGetRequest {
+	helpers.AddImpersonationHeader(&r.header, user)
 	return r
 }
 
@@ -230,15 +235,21 @@ func (r *ProductGetRequest) SendContext(ctx context.Context) (result *ProductGet
 	result = &ProductGetResponse{}
 	result.status = response.StatusCode
 	result.header = response.Header
+	reader := bufio.NewReader(response.Body)
+	_, err = reader.Peek(1)
+	if err == io.EOF {
+		err = nil
+		return
+	}
 	if result.status >= 400 {
-		result.err, err = errors.UnmarshalError(response.Body)
+		result.err, err = errors.UnmarshalErrorStatus(reader, result.status)
 		if err != nil {
 			return
 		}
 		err = result.err
 		return
 	}
-	err = readProductGetResponse(result, response.Body)
+	err = readProductGetResponse(result, reader)
 	if err != nil {
 		return
 	}
@@ -278,8 +289,6 @@ func (r *ProductGetResponse) Error() *errors.Error {
 }
 
 // Body returns the value of the 'body' parameter.
-//
-//
 func (r *ProductGetResponse) Body() *Product {
 	if r == nil {
 		return nil
@@ -289,8 +298,6 @@ func (r *ProductGetResponse) Body() *Product {
 
 // GetBody returns the value of the 'body' parameter and
 // a flag indicating if the parameter has a value.
-//
-//
 func (r *ProductGetResponse) GetBody() (value *Product, ok bool) {
 	ok = r != nil && r.body != nil
 	if ok {

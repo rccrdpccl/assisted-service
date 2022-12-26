@@ -31,7 +31,10 @@ import (
 func MarshalOperatorIAMRoleList(list []*OperatorIAMRole, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeOperatorIAMRoleList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalOperatorIAMRoleList(source interface{}) (items []*OperatorIAMRole,
 	return
 }
 
-// readOperatorIAMRoleList reads list of values of the ''operator_IAM_role' type from
+// readOperatorIAMRoleList reads list of values of the ”operator_IAM_role' type from
 // the given iterator.
 func readOperatorIAMRoleList(iterator *jsoniter.Iterator) []*OperatorIAMRole {
 	list := []*OperatorIAMRole{}

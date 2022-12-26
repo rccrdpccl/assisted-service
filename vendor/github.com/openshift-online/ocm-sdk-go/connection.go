@@ -31,6 +31,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/openshift-online/ocm-sdk-go/accountsmgmt"
+	"github.com/openshift-online/ocm-sdk-go/addonsmgmt"
 	"github.com/openshift-online/ocm-sdk-go/authentication"
 	"github.com/openshift-online/ocm-sdk-go/authorizations"
 	"github.com/openshift-online/ocm-sdk-go/clustersmgmt"
@@ -39,8 +40,12 @@ import (
 	"github.com/openshift-online/ocm-sdk-go/jobqueue"
 	"github.com/openshift-online/ocm-sdk-go/logging"
 	"github.com/openshift-online/ocm-sdk-go/metrics"
+	"github.com/openshift-online/ocm-sdk-go/osdfleetmgmt"
 	"github.com/openshift-online/ocm-sdk-go/retry"
 	"github.com/openshift-online/ocm-sdk-go/servicelogs"
+	"github.com/openshift-online/ocm-sdk-go/servicemgmt"
+	"github.com/openshift-online/ocm-sdk-go/statusboard"
+	"github.com/openshift-online/ocm-sdk-go/webrca"
 )
 
 // Default values:
@@ -462,21 +467,21 @@ func (b *ConnectionBuilder) TransportWrapper(value TransportWrapper) *Connection
 // To calculate the average request duration during the last 10 minutes, for example, use a
 // Prometheus expression like this:
 //
-//      rate(api_outbound_request_duration_sum[10m]) / rate(api_outbound_request_duration_count[10m])
+//	rate(api_outbound_request_duration_sum[10m]) / rate(api_outbound_request_duration_count[10m])
 //
 // In order to reduce the cardinality of the metrics the path label is modified to remove the
 // identifiers of the objects. For example, if the original path is .../clusters/123 then it will
 // be replaced by .../clusters/-, and the values will be accumulated. The line returned by the
 // metrics server will be like this:
 //
-//      api_outbound_request_count{code="200",method="GET",path="/api/clusters_mgmt/v1/clusters/-"} 56
+//	api_outbound_request_count{code="200",method="GET",path="/api/clusters_mgmt/v1/clusters/-"} 56
 //
 // The meaning of that is that there were a total of 56 requests to get specific clusters,
 // independently of the specific identifier of the cluster.
 //
 // The token request metrics will contain the following labels:
 //
-//      code - HTTP response code, for example 200 or 500.
+//	code - HTTP response code, for example 200 or 500.
 //
 // The value of the `code` label will be zero when sending the request failed without a response
 // code, for example if it wasn't possible to open the connection, or if there was a timeout waiting
@@ -965,9 +970,20 @@ func (c *Connection) AccountsMgmt() *accountsmgmt.Client {
 	return accountsmgmt.NewClient(c, "/api/accounts_mgmt")
 }
 
+// AccountsMgmt returns the client for the accounts management service.
+func (c *Connection) AddonsMgmt() *addonsmgmt.Client {
+	return addonsmgmt.NewClient(c, "/api/addons_mgmt")
+}
+
 // ClustersMgmt returns the client for the clusters management service.
 func (c *Connection) ClustersMgmt() *clustersmgmt.Client {
 	return clustersmgmt.NewClient(c, "/api/clusters_mgmt")
+}
+
+// OSDFleetMgmt returns the client for the OSD management service.
+func (c *Connection) OSDFleetMgmt() *osdfleetmgmt.Client {
+
+	return osdfleetmgmt.NewClient(c, "/api/osd_fleet_mgmt")
 }
 
 // Authorizations returns the client for the authorizations service.
@@ -985,11 +1001,31 @@ func (c *Connection) JobQueue() *jobqueue.Client {
 	return jobqueue.NewClient(c, "/api/job_queue")
 }
 
+// Status board returns the client for the status board service.
+func (c *Connection) StatusBoard() *statusboard.Client {
+	return statusboard.NewClient(c, "/api/status-board")
+}
+
+// ServiceMgmt returns the client for the service management service.
+func (c *Connection) ServiceMgmt() *servicemgmt.Client {
+	return servicemgmt.NewClient(c, "/api/service_mgmt")
+}
+
+// WebRCA returns the client for the web RCA service.
+func (c *Connection) WebRCA() *webrca.Client {
+	return webrca.NewClient(c, "/api/web-rca")
+}
+
 // Close releases all the resources used by the connection. It is very important to always close it
 // once it is no longer needed, as otherwise those resources may be leaked. Trying to use a
 // connection that has been closed will result in a error.
 func (c *Connection) Close() error {
 	var err error
+
+	// in case the connection is already closed, return instead of printing an error message
+	if c.closed {
+		return nil
+	}
 
 	// Close the HTTP clients:
 	err = c.clientSelector.Close()
@@ -1003,7 +1039,7 @@ func (c *Connection) Close() error {
 		return err
 	}
 
-	// Makr the connection as closed, so that further attempts to use it will fail:
+	// Mark the connection as closed, so that further attempts to use it will fail:
 	c.closed = true
 	return nil
 }

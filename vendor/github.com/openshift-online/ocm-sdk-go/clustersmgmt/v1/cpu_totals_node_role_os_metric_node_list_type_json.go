@@ -31,7 +31,10 @@ import (
 func MarshalCPUTotalsNodeRoleOSMetricNodeList(list []*CPUTotalsNodeRoleOSMetricNode, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeCPUTotalsNodeRoleOSMetricNodeList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalCPUTotalsNodeRoleOSMetricNodeList(source interface{}) (items []*CP
 	return
 }
 
-// readCPUTotalsNodeRoleOSMetricNodeList reads list of values of the ''CPU_totals_node_role_OS_metric_node' type from
+// readCPUTotalsNodeRoleOSMetricNodeList reads list of values of the ”CPU_totals_node_role_OS_metric_node' type from
 // the given iterator.
 func readCPUTotalsNodeRoleOSMetricNodeList(iterator *jsoniter.Iterator) []*CPUTotalsNodeRoleOSMetricNode {
 	list := []*CPUTotalsNodeRoleOSMetricNode{}
