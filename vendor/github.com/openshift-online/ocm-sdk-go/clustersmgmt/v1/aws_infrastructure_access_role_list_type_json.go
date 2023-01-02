@@ -31,7 +31,10 @@ import (
 func MarshalAWSInfrastructureAccessRoleList(list []*AWSInfrastructureAccessRole, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeAWSInfrastructureAccessRoleList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalAWSInfrastructureAccessRoleList(source interface{}) (items []*AWSI
 	return
 }
 
-// readAWSInfrastructureAccessRoleList reads list of values of the ''AWS_infrastructure_access_role' type from
+// readAWSInfrastructureAccessRoleList reads list of values of the ”AWS_infrastructure_access_role' type from
 // the given iterator.
 func readAWSInfrastructureAccessRoleList(iterator *jsoniter.Iterator) []*AWSInfrastructureAccessRole {
 	list := []*AWSInfrastructureAccessRole{}

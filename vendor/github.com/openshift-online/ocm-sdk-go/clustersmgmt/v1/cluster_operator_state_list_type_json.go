@@ -31,7 +31,10 @@ import (
 func MarshalClusterOperatorStateList(list []ClusterOperatorState, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeClusterOperatorStateList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalClusterOperatorStateList(source interface{}) (items []ClusterOpera
 	return
 }
 
-// readClusterOperatorStateList reads list of values of the ''cluster_operator_state' type from
+// readClusterOperatorStateList reads list of values of the ”cluster_operator_state' type from
 // the given iterator.
 func readClusterOperatorStateList(iterator *jsoniter.Iterator) []ClusterOperatorState {
 	list := []ClusterOperatorState{}

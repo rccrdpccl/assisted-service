@@ -31,7 +31,10 @@ import (
 func MarshalCapabilityReviewResponseList(list []*CapabilityReviewResponse, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeCapabilityReviewResponseList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalCapabilityReviewResponseList(source interface{}) (items []*Capabil
 	return
 }
 
-// readCapabilityReviewResponseList reads list of values of the ''capability_review_response' type from
+// readCapabilityReviewResponseList reads list of values of the ”capability_review_response' type from
 // the given iterator.
 func readCapabilityReviewResponseList(iterator *jsoniter.Iterator) []*CapabilityReviewResponse {
 	list := []*CapabilityReviewResponse{}

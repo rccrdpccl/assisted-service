@@ -31,7 +31,10 @@ import (
 func MarshalClusterAPIList(list []*ClusterAPI, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeClusterAPIList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalClusterAPIList(source interface{}) (items []*ClusterAPI, err error
 	return
 }
 
-// readClusterAPIList reads list of values of the ''cluster_API' type from
+// readClusterAPIList reads list of values of the ”cluster_API' type from
 // the given iterator.
 func readClusterAPIList(iterator *jsoniter.Iterator) []*ClusterAPI {
 	list := []*ClusterAPI{}

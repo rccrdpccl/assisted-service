@@ -31,7 +31,10 @@ import (
 func MarshalLogEntryList(list []*LogEntry, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeLogEntryList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalLogEntryList(source interface{}) (items []*LogEntry, err error) {
 	return
 }
 
-// readLogEntryList reads list of values of the ''log_entry' type from
+// readLogEntryList reads list of values of the ”log_entry' type from
 // the given iterator.
 func readLogEntryList(iterator *jsoniter.Iterator) []*LogEntry {
 	list := []*LogEntry{}

@@ -31,7 +31,10 @@ import (
 func MarshalResourceQuotaList(list []*ResourceQuota, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeResourceQuotaList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalResourceQuotaList(source interface{}) (items []*ResourceQuota, err
 	return
 }
 
-// readResourceQuotaList reads list of values of the ''resource_quota' type from
+// readResourceQuotaList reads list of values of the ”resource_quota' type from
 // the given iterator.
 func readResourceQuotaList(iterator *jsoniter.Iterator) []*ResourceQuota {
 	list := []*ResourceQuota{}

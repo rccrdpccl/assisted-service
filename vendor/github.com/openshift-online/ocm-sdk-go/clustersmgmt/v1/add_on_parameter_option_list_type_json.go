@@ -31,7 +31,10 @@ import (
 func MarshalAddOnParameterOptionList(list []*AddOnParameterOption, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeAddOnParameterOptionList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalAddOnParameterOptionList(source interface{}) (items []*AddOnParame
 	return
 }
 
-// readAddOnParameterOptionList reads list of values of the ''add_on_parameter_option' type from
+// readAddOnParameterOptionList reads list of values of the ”add_on_parameter_option' type from
 // the given iterator.
 func readAddOnParameterOptionList(iterator *jsoniter.Iterator) []*AddOnParameterOption {
 	list := []*AddOnParameterOption{}

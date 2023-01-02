@@ -31,7 +31,10 @@ import (
 func MarshalProvisionShardList(list []*ProvisionShard, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeProvisionShardList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalProvisionShardList(source interface{}) (items []*ProvisionShard, e
 	return
 }
 
-// readProvisionShardList reads list of values of the ''provision_shard' type from
+// readProvisionShardList reads list of values of the ”provision_shard' type from
 // the given iterator.
 func readProvisionShardList(iterator *jsoniter.Iterator) []*ProvisionShard {
 	list := []*ProvisionShard{}

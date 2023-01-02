@@ -21,7 +21,6 @@ package v1 // github.com/openshift-online/ocm-sdk-go/clustersmgmt/v1
 
 import (
 	"io"
-	"net/http"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/openshift-online/ocm-sdk-go/helpers"
@@ -31,7 +30,10 @@ import (
 func MarshalCloudRegion(object *CloudRegion, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeCloudRegion(object, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -113,9 +115,17 @@ func writeCloudRegion(object *CloudRegion, stream *jsoniter.Stream) {
 		if count > 0 {
 			stream.WriteMore()
 		}
+		stream.WriteObjectField("supports_hypershift")
+		stream.WriteBool(object.supportsHypershift)
+		count++
+	}
+	present_ = object.bitmap_&512 != 0
+	if present_ {
+		if count > 0 {
+			stream.WriteMore()
+		}
 		stream.WriteObjectField("supports_multi_az")
 		stream.WriteBool(object.supportsMultiAZ)
-		count++
 	}
 	stream.WriteObjectEnd()
 }
@@ -123,9 +133,6 @@ func writeCloudRegion(object *CloudRegion, stream *jsoniter.Stream) {
 // UnmarshalCloudRegion reads a value of the 'cloud_region' type from the given
 // source, which can be an slice of bytes, a string or a reader.
 func UnmarshalCloudRegion(source interface{}) (object *CloudRegion, err error) {
-	if source == http.NoBody {
-		return
-	}
 	iterator, err := helpers.NewIterator(source)
 	if err != nil {
 		return
@@ -175,10 +182,14 @@ func readCloudRegion(iterator *jsoniter.Iterator) *CloudRegion {
 			value := iterator.ReadString()
 			object.name = value
 			object.bitmap_ |= 128
+		case "supports_hypershift":
+			value := iterator.ReadBool()
+			object.supportsHypershift = value
+			object.bitmap_ |= 256
 		case "supports_multi_az":
 			value := iterator.ReadBool()
 			object.supportsMultiAZ = value
-			object.bitmap_ |= 256
+			object.bitmap_ |= 512
 		default:
 			iterator.ReadAny()
 		}

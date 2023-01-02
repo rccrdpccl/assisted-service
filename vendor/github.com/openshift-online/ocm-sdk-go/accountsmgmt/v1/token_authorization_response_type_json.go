@@ -21,7 +21,6 @@ package v1 // github.com/openshift-online/ocm-sdk-go/accountsmgmt/v1
 
 import (
 	"io"
-	"net/http"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/openshift-online/ocm-sdk-go/helpers"
@@ -31,7 +30,10 @@ import (
 func MarshalTokenAuthorizationResponse(object *TokenAuthorizationResponse, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeTokenAuthorizationResponse(object, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -47,7 +49,6 @@ func writeTokenAuthorizationResponse(object *TokenAuthorizationResponse, stream 
 		}
 		stream.WriteObjectField("account")
 		writeAccount(object.account, stream)
-		count++
 	}
 	stream.WriteObjectEnd()
 }
@@ -55,9 +56,6 @@ func writeTokenAuthorizationResponse(object *TokenAuthorizationResponse, stream 
 // UnmarshalTokenAuthorizationResponse reads a value of the 'token_authorization_response' type from the given
 // source, which can be an slice of bytes, a string or a reader.
 func UnmarshalTokenAuthorizationResponse(source interface{}) (object *TokenAuthorizationResponse, err error) {
-	if source == http.NoBody {
-		return
-	}
 	iterator, err := helpers.NewIterator(source)
 	if err != nil {
 		return

@@ -56,6 +56,11 @@ func (b *ClusterCredentialsBuilder) HREF(value string) *ClusterCredentialsBuilde
 	return b
 }
 
+// Empty returns true if the builder is empty, i.e. no attribute has a value.
+func (b *ClusterCredentialsBuilder) Empty() bool {
+	return b == nil || b.bitmap_&^1 == 0
+}
+
 // SSH sets the value of the 'SSH' attribute to the given value.
 //
 // SSH key pair of a cluster.
@@ -84,8 +89,6 @@ func (b *ClusterCredentialsBuilder) Admin(value *AdminCredentialsBuilder) *Clust
 }
 
 // Kubeconfig sets the value of the 'kubeconfig' attribute to the given value.
-//
-//
 func (b *ClusterCredentialsBuilder) Kubeconfig(value string) *ClusterCredentialsBuilder {
 	b.kubeconfig = value
 	b.bitmap_ |= 32

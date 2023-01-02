@@ -31,7 +31,10 @@ import (
 func MarshalSTSList(list []*STS, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeSTSList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalSTSList(source interface{}) (items []*STS, err error) {
 	return
 }
 
-// readSTSList reads list of values of the ''STS' type from
+// readSTSList reads list of values of the ”STS' type from
 // the given iterator.
 func readSTSList(iterator *jsoniter.Iterator) []*STS {
 	list := []*STS{}

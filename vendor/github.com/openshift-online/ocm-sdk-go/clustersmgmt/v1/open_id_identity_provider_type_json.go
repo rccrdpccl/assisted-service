@@ -21,7 +21,6 @@ package v1 // github.com/openshift-online/ocm-sdk-go/clustersmgmt/v1
 
 import (
 	"io"
-	"net/http"
 	"sort"
 
 	jsoniter "github.com/json-iterator/go"
@@ -32,7 +31,10 @@ import (
 func MarshalOpenIDIdentityProvider(object *OpenIDIdentityProvider, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeOpenIDIdentityProvider(object, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -122,7 +124,6 @@ func writeOpenIDIdentityProvider(object *OpenIDIdentityProvider, stream *jsonite
 		}
 		stream.WriteObjectField("issuer")
 		stream.WriteString(object.issuer)
-		count++
 	}
 	stream.WriteObjectEnd()
 }
@@ -130,9 +131,6 @@ func writeOpenIDIdentityProvider(object *OpenIDIdentityProvider, stream *jsonite
 // UnmarshalOpenIDIdentityProvider reads a value of the 'open_ID_identity_provider' type from the given
 // source, which can be an slice of bytes, a string or a reader.
 func UnmarshalOpenIDIdentityProvider(source interface{}) (object *OpenIDIdentityProvider, err error) {
-	if source == http.NoBody {
-		return
-	}
 	iterator, err := helpers.NewIterator(source)
 	if err != nil {
 		return

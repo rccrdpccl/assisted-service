@@ -21,7 +21,6 @@ package v1 // github.com/openshift-online/ocm-sdk-go/accountsmgmt/v1
 
 import (
 	"io"
-	"net/http"
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
@@ -32,7 +31,10 @@ import (
 func MarshalLabel(object *Label, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeLabel(object, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -69,11 +71,20 @@ func writeLabel(object *Label, stream *jsoniter.Stream) {
 		if count > 0 {
 			stream.WriteMore()
 		}
+		stream.WriteObjectField("account_id")
+		stream.WriteString(object.accountID)
+		count++
+	}
+	present_ = object.bitmap_&16 != 0
+	if present_ {
+		if count > 0 {
+			stream.WriteMore()
+		}
 		stream.WriteObjectField("created_at")
 		stream.WriteString((object.createdAt).Format(time.RFC3339))
 		count++
 	}
-	present_ = object.bitmap_&16 != 0
+	present_ = object.bitmap_&32 != 0
 	if present_ {
 		if count > 0 {
 			stream.WriteMore()
@@ -82,7 +93,7 @@ func writeLabel(object *Label, stream *jsoniter.Stream) {
 		stream.WriteBool(object.internal)
 		count++
 	}
-	present_ = object.bitmap_&32 != 0
+	present_ = object.bitmap_&64 != 0
 	if present_ {
 		if count > 0 {
 			stream.WriteMore()
@@ -91,7 +102,43 @@ func writeLabel(object *Label, stream *jsoniter.Stream) {
 		stream.WriteString(object.key)
 		count++
 	}
-	present_ = object.bitmap_&64 != 0
+	present_ = object.bitmap_&128 != 0
+	if present_ {
+		if count > 0 {
+			stream.WriteMore()
+		}
+		stream.WriteObjectField("managed_by")
+		stream.WriteString(object.managedBy)
+		count++
+	}
+	present_ = object.bitmap_&256 != 0
+	if present_ {
+		if count > 0 {
+			stream.WriteMore()
+		}
+		stream.WriteObjectField("organization_id")
+		stream.WriteString(object.organizationID)
+		count++
+	}
+	present_ = object.bitmap_&512 != 0
+	if present_ {
+		if count > 0 {
+			stream.WriteMore()
+		}
+		stream.WriteObjectField("subscription_id")
+		stream.WriteString(object.subscriptionID)
+		count++
+	}
+	present_ = object.bitmap_&1024 != 0
+	if present_ {
+		if count > 0 {
+			stream.WriteMore()
+		}
+		stream.WriteObjectField("type")
+		stream.WriteString(object.type_)
+		count++
+	}
+	present_ = object.bitmap_&2048 != 0
 	if present_ {
 		if count > 0 {
 			stream.WriteMore()
@@ -100,14 +147,13 @@ func writeLabel(object *Label, stream *jsoniter.Stream) {
 		stream.WriteString((object.updatedAt).Format(time.RFC3339))
 		count++
 	}
-	present_ = object.bitmap_&128 != 0
+	present_ = object.bitmap_&4096 != 0
 	if present_ {
 		if count > 0 {
 			stream.WriteMore()
 		}
 		stream.WriteObjectField("value")
 		stream.WriteString(object.value)
-		count++
 	}
 	stream.WriteObjectEnd()
 }
@@ -115,9 +161,6 @@ func writeLabel(object *Label, stream *jsoniter.Stream) {
 // UnmarshalLabel reads a value of the 'label' type from the given
 // source, which can be an slice of bytes, a string or a reader.
 func UnmarshalLabel(source interface{}) (object *Label, err error) {
-	if source == http.NoBody {
-		return
-	}
 	iterator, err := helpers.NewIterator(source)
 	if err != nil {
 		return
@@ -147,6 +190,10 @@ func readLabel(iterator *jsoniter.Iterator) *Label {
 		case "href":
 			object.href = iterator.ReadString()
 			object.bitmap_ |= 4
+		case "account_id":
+			value := iterator.ReadString()
+			object.accountID = value
+			object.bitmap_ |= 8
 		case "created_at":
 			text := iterator.ReadString()
 			value, err := time.Parse(time.RFC3339, text)
@@ -154,15 +201,31 @@ func readLabel(iterator *jsoniter.Iterator) *Label {
 				iterator.ReportError("", err.Error())
 			}
 			object.createdAt = value
-			object.bitmap_ |= 8
+			object.bitmap_ |= 16
 		case "internal":
 			value := iterator.ReadBool()
 			object.internal = value
-			object.bitmap_ |= 16
+			object.bitmap_ |= 32
 		case "key":
 			value := iterator.ReadString()
 			object.key = value
-			object.bitmap_ |= 32
+			object.bitmap_ |= 64
+		case "managed_by":
+			value := iterator.ReadString()
+			object.managedBy = value
+			object.bitmap_ |= 128
+		case "organization_id":
+			value := iterator.ReadString()
+			object.organizationID = value
+			object.bitmap_ |= 256
+		case "subscription_id":
+			value := iterator.ReadString()
+			object.subscriptionID = value
+			object.bitmap_ |= 512
+		case "type":
+			value := iterator.ReadString()
+			object.type_ = value
+			object.bitmap_ |= 1024
 		case "updated_at":
 			text := iterator.ReadString()
 			value, err := time.Parse(time.RFC3339, text)
@@ -170,11 +233,11 @@ func readLabel(iterator *jsoniter.Iterator) *Label {
 				iterator.ReportError("", err.Error())
 			}
 			object.updatedAt = value
-			object.bitmap_ |= 64
+			object.bitmap_ |= 2048
 		case "value":
 			value := iterator.ReadString()
 			object.value = value
-			object.bitmap_ |= 128
+			object.bitmap_ |= 4096
 		default:
 			iterator.ReadAny()
 		}

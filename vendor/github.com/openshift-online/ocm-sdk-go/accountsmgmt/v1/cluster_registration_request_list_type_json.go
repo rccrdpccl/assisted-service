@@ -31,7 +31,10 @@ import (
 func MarshalClusterRegistrationRequestList(list []*ClusterRegistrationRequest, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeClusterRegistrationRequestList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalClusterRegistrationRequestList(source interface{}) (items []*Clust
 	return
 }
 
-// readClusterRegistrationRequestList reads list of values of the ''cluster_registration_request' type from
+// readClusterRegistrationRequestList reads list of values of the ”cluster_registration_request' type from
 // the given iterator.
 func readClusterRegistrationRequestList(iterator *jsoniter.Iterator) []*ClusterRegistrationRequest {
 	list := []*ClusterRegistrationRequest{}
