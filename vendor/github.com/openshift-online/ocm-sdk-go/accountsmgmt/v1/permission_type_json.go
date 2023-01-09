@@ -21,7 +21,6 @@ package v1 // github.com/openshift-online/ocm-sdk-go/accountsmgmt/v1
 
 import (
 	"io"
-	"net/http"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/openshift-online/ocm-sdk-go/helpers"
@@ -31,7 +30,10 @@ import (
 func MarshalPermission(object *Permission, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writePermission(object, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -79,7 +81,6 @@ func writePermission(object *Permission, stream *jsoniter.Stream) {
 		}
 		stream.WriteObjectField("resource_type")
 		stream.WriteString(object.resourceType)
-		count++
 	}
 	stream.WriteObjectEnd()
 }
@@ -87,9 +88,6 @@ func writePermission(object *Permission, stream *jsoniter.Stream) {
 // UnmarshalPermission reads a value of the 'permission' type from the given
 // source, which can be an slice of bytes, a string or a reader.
 func UnmarshalPermission(source interface{}) (object *Permission, err error) {
-	if source == http.NoBody {
-		return
-	}
 	iterator, err := helpers.NewIterator(source)
 	if err != nil {
 		return

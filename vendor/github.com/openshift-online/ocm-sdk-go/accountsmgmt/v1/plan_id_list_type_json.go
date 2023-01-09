@@ -31,7 +31,10 @@ import (
 func MarshalPlanIDList(list []PlanID, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writePlanIDList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalPlanIDList(source interface{}) (items []PlanID, err error) {
 	return
 }
 
-// readPlanIDList reads list of values of the ''plan_ID' type from
+// readPlanIDList reads list of values of the ”plan_ID' type from
 // the given iterator.
 func readPlanIDList(iterator *jsoniter.Iterator) []PlanID {
 	list := []PlanID{}

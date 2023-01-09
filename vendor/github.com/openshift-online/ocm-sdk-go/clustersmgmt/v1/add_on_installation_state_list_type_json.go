@@ -31,7 +31,10 @@ import (
 func MarshalAddOnInstallationStateList(list []AddOnInstallationState, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeAddOnInstallationStateList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalAddOnInstallationStateList(source interface{}) (items []AddOnInsta
 	return
 }
 
-// readAddOnInstallationStateList reads list of values of the ''add_on_installation_state' type from
+// readAddOnInstallationStateList reads list of values of the ”add_on_installation_state' type from
 // the given iterator.
 func readAddOnInstallationStateList(iterator *jsoniter.Iterator) []AddOnInstallationState {
 	list := []AddOnInstallationState{}

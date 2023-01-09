@@ -31,7 +31,10 @@ import (
 func MarshalAWSFlavourList(list []*AWSFlavour, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeAWSFlavourList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalAWSFlavourList(source interface{}) (items []*AWSFlavour, err error
 	return
 }
 
-// readAWSFlavourList reads list of values of the ''AWS_flavour' type from
+// readAWSFlavourList reads list of values of the ”AWS_flavour' type from
 // the given iterator.
 func readAWSFlavourList(iterator *jsoniter.Iterator) []*AWSFlavour {
 	list := []*AWSFlavour{}

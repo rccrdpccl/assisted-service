@@ -31,7 +31,10 @@ import (
 func MarshalIngressList(list []*Ingress, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeIngressList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalIngressList(source interface{}) (items []*Ingress, err error) {
 	return
 }
 
-// readIngressList reads list of values of the ''ingress' type from
+// readIngressList reads list of values of the ”ingress' type from
 // the given iterator.
 func readIngressList(iterator *jsoniter.Iterator) []*Ingress {
 	list := []*Ingress{}

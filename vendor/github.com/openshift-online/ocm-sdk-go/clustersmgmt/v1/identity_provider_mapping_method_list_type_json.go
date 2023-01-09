@@ -31,7 +31,10 @@ import (
 func MarshalIdentityProviderMappingMethodList(list []IdentityProviderMappingMethod, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeIdentityProviderMappingMethodList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalIdentityProviderMappingMethodList(source interface{}) (items []Ide
 	return
 }
 
-// readIdentityProviderMappingMethodList reads list of values of the ''identity_provider_mapping_method' type from
+// readIdentityProviderMappingMethodList reads list of values of the ”identity_provider_mapping_method' type from
 // the given iterator.
 func readIdentityProviderMappingMethodList(iterator *jsoniter.Iterator) []IdentityProviderMappingMethod {
 	list := []IdentityProviderMappingMethod{}

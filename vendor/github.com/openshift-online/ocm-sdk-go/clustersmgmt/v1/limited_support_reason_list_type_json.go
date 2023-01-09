@@ -31,7 +31,10 @@ import (
 func MarshalLimitedSupportReasonList(list []*LimitedSupportReason, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeLimitedSupportReasonList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalLimitedSupportReasonList(source interface{}) (items []*LimitedSupp
 	return
 }
 
-// readLimitedSupportReasonList reads list of values of the ''limited_support_reason' type from
+// readLimitedSupportReasonList reads list of values of the ”limited_support_reason' type from
 // the given iterator.
 func readLimitedSupportReasonList(iterator *jsoniter.Iterator) []*LimitedSupportReason {
 	list := []*LimitedSupportReason{}
