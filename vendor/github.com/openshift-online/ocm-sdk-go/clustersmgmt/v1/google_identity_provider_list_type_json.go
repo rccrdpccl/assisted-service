@@ -31,7 +31,10 @@ import (
 func MarshalGoogleIdentityProviderList(list []*GoogleIdentityProvider, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeGoogleIdentityProviderList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalGoogleIdentityProviderList(source interface{}) (items []*GoogleIde
 	return
 }
 
-// readGoogleIdentityProviderList reads list of values of the ''google_identity_provider' type from
+// readGoogleIdentityProviderList reads list of values of the ”google_identity_provider' type from
 // the given iterator.
 func readGoogleIdentityProviderList(iterator *jsoniter.Iterator) []*GoogleIdentityProvider {
 	list := []*GoogleIdentityProvider{}

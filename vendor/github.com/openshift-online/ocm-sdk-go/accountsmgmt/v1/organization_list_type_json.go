@@ -31,7 +31,10 @@ import (
 func MarshalOrganizationList(list []*Organization, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeOrganizationList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalOrganizationList(source interface{}) (items []*Organization, err e
 	return
 }
 
-// readOrganizationList reads list of values of the ''organization' type from
+// readOrganizationList reads list of values of the ”organization' type from
 // the given iterator.
 func readOrganizationList(iterator *jsoniter.Iterator) []*Organization {
 	list := []*Organization{}

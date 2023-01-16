@@ -31,7 +31,10 @@ import (
 func MarshalAddOnInstallModeList(list []AddOnInstallMode, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeAddOnInstallModeList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalAddOnInstallModeList(source interface{}) (items []AddOnInstallMode
 	return
 }
 
-// readAddOnInstallModeList reads list of values of the ''add_on_install_mode' type from
+// readAddOnInstallModeList reads list of values of the ”add_on_install_mode' type from
 // the given iterator.
 func readAddOnInstallModeList(iterator *jsoniter.Iterator) []AddOnInstallMode {
 	list := []AddOnInstallMode{}

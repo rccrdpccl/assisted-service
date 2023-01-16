@@ -21,7 +21,6 @@ package v1 // github.com/openshift-online/ocm-sdk-go/authorizations/v1
 
 import (
 	"io"
-	"net/http"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/openshift-online/ocm-sdk-go/helpers"
@@ -31,7 +30,10 @@ import (
 func MarshalAccessReviewRequest(object *AccessReviewRequest, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeAccessReviewRequest(object, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -101,7 +103,6 @@ func writeAccessReviewRequest(object *AccessReviewRequest, stream *jsoniter.Stre
 		}
 		stream.WriteObjectField("subscription_id")
 		stream.WriteString(object.subscriptionID)
-		count++
 	}
 	stream.WriteObjectEnd()
 }
@@ -109,9 +110,6 @@ func writeAccessReviewRequest(object *AccessReviewRequest, stream *jsoniter.Stre
 // UnmarshalAccessReviewRequest reads a value of the 'access_review_request' type from the given
 // source, which can be an slice of bytes, a string or a reader.
 func UnmarshalAccessReviewRequest(source interface{}) (object *AccessReviewRequest, err error) {
-	if source == http.NoBody {
-		return
-	}
 	iterator, err := helpers.NewIterator(source)
 	if err != nil {
 		return

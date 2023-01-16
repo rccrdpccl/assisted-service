@@ -31,7 +31,10 @@ import (
 func MarshalNetworkList(list []*Network, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeNetworkList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalNetworkList(source interface{}) (items []*Network, err error) {
 	return
 }
 
-// readNetworkList reads list of values of the ''network' type from
+// readNetworkList reads list of values of the ”network' type from
 // the given iterator.
 func readNetworkList(iterator *jsoniter.Iterator) []*Network {
 	list := []*Network{}

@@ -31,7 +31,10 @@ import (
 func MarshalAWSVolumeList(list []*AWSVolume, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeAWSVolumeList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalAWSVolumeList(source interface{}) (items []*AWSVolume, err error) 
 	return
 }
 
-// readAWSVolumeList reads list of values of the ''AWS_volume' type from
+// readAWSVolumeList reads list of values of the ”AWS_volume' type from
 // the given iterator.
 func readAWSVolumeList(iterator *jsoniter.Iterator) []*AWSVolume {
 	list := []*AWSVolume{}

@@ -31,7 +31,10 @@ import (
 func MarshalFeatureReviewRequestList(list []*FeatureReviewRequest, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeFeatureReviewRequestList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalFeatureReviewRequestList(source interface{}) (items []*FeatureRevi
 	return
 }
 
-// readFeatureReviewRequestList reads list of values of the ''feature_review_request' type from
+// readFeatureReviewRequestList reads list of values of the ”feature_review_request' type from
 // the given iterator.
 func readFeatureReviewRequestList(iterator *jsoniter.Iterator) []*FeatureReviewRequest {
 	list := []*FeatureReviewRequest{}
