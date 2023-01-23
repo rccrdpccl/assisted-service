@@ -31,7 +31,10 @@ import (
 func MarshalSummaryMetricsList(list []*SummaryMetrics, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeSummaryMetricsList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalSummaryMetricsList(source interface{}) (items []*SummaryMetrics, e
 	return
 }
 
-// readSummaryMetricsList reads list of values of the ''summary_metrics' type from
+// readSummaryMetricsList reads list of values of the ”summary_metrics' type from
 // the given iterator.
 func readSummaryMetricsList(iterator *jsoniter.Iterator) []*SummaryMetrics {
 	list := []*SummaryMetrics{}

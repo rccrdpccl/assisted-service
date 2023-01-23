@@ -21,7 +21,6 @@ package v1 // github.com/openshift-online/ocm-sdk-go/authorizations/v1
 
 import (
 	"io"
-	"net/http"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/openshift-online/ocm-sdk-go/helpers"
@@ -31,7 +30,10 @@ import (
 func MarshalSelfCapabilityReviewResponse(object *SelfCapabilityReviewResponse, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeSelfCapabilityReviewResponse(object, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -47,7 +49,6 @@ func writeSelfCapabilityReviewResponse(object *SelfCapabilityReviewResponse, str
 		}
 		stream.WriteObjectField("result")
 		stream.WriteString(object.result)
-		count++
 	}
 	stream.WriteObjectEnd()
 }
@@ -55,9 +56,6 @@ func writeSelfCapabilityReviewResponse(object *SelfCapabilityReviewResponse, str
 // UnmarshalSelfCapabilityReviewResponse reads a value of the 'self_capability_review_response' type from the given
 // source, which can be an slice of bytes, a string or a reader.
 func UnmarshalSelfCapabilityReviewResponse(source interface{}) (object *SelfCapabilityReviewResponse, err error) {
-	if source == http.NoBody {
-		return
-	}
 	iterator, err := helpers.NewIterator(source)
 	if err != nil {
 		return

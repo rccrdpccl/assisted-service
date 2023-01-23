@@ -14,20 +14,20 @@
 # limitations under the License.
 #
 
-# Enable Go modules:
-export GO111MODULE=on
-export GOPROXY=https://proxy.golang.org
-
 # Disable CGO so that we always generate static binaries:
 export CGO_ENABLED=0
 
 # Details of the model to use:
-model_version:=v0.0.142
+model_version:=v0.0.252
 model_url:=https://github.com/openshift-online/ocm-api-model.git
 
 # Details of the metamodel to use:
-metamodel_version:=v0.0.39
-metamodel_url:=https://github.com/openshift-online/ocm-api-metamodel.git
+metamodel_version:=v0.0.56
+
+# Additional flags to pass to the `ginkgo` command. This is used in the GitHub
+# actions environment to skip tests that are sensitive to the speed of the
+# machine: the leadership flag and retry tests.
+ginkgo_flags:=
 
 .PHONY: examples
 examples:
@@ -38,7 +38,7 @@ examples:
 
 .PHONY: test tests
 test tests:
-	ginkgo -r
+	ginkgo run -r $(ginkgo_flags)
 
 .PHONY: fmt
 fmt:
@@ -53,18 +53,23 @@ lint:
 generate: model metamodel
 	rm -rf \
 		accountsmgmt \
+		addonsmgmt \
 		authorizations \
 		clustersmgmt \
-		servicelogs \
 		errors \
-		job_queue \
 		helpers \
+		jobqueue \
+		servicelogs \
+		servicemgmt \
+		statusboard \
+		webrca \
+		osdfleetmgmt \
 		openapi
-	metamodel/metamodel generate go \
+	metamodel generate go \
 		--model=model/model \
 		--base=github.com/openshift-online/ocm-sdk-go \
 		--output=.
-	metamodel/metamodel generate openapi \
+	metamodel generate openapi \
 		--model=model/model \
 		--output=openapi
 
@@ -82,21 +87,11 @@ model:
 
 .PHONY: metamodel
 metamodel:
-	rm -rf "$@"
-	if [ -d "$(metamodel_url)" ]; then \
-		cp -r "$(metamodel_url)" "$@"; \
-	else \
-		git clone "$(metamodel_url)" "$@"; \
-		cd "$@"; \
-		git fetch --tags origin; \
-		git checkout -B build "$(metamodel_version)"; \
-	fi
-	make -C "$@"
+	go install github.com/openshift-online/ocm-api-metamodel/cmd/metamodel@$(metamodel_version)
 
 .PHONY: clean
 clean:
 	rm -rf \
-		.gobin \
 		metamodel \
 		model \
 		$(NULL)

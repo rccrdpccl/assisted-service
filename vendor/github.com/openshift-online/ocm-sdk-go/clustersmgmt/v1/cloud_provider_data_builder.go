@@ -23,17 +23,24 @@ package v1 // github.com/openshift-online/ocm-sdk-go/clustersmgmt/v1
 //
 // Description of a cloud provider data used for cloud provider inquiries.
 type CloudProviderDataBuilder struct {
-	bitmap_     uint32
-	aws         *AWSBuilder
-	gcp         *GCPBuilder
-	keyLocation string
-	keyRingName string
-	region      *CloudRegionBuilder
+	bitmap_           uint32
+	aws               *AWSBuilder
+	gcp               *GCPBuilder
+	availabilityZones []string
+	keyLocation       string
+	keyRingName       string
+	region            *CloudRegionBuilder
+	version           *VersionBuilder
 }
 
 // NewCloudProviderData creates a new builder of 'cloud_provider_data' objects.
 func NewCloudProviderData() *CloudProviderDataBuilder {
 	return &CloudProviderDataBuilder{}
+}
+
+// Empty returns true if the builder is empty, i.e. no attribute has a value.
+func (b *CloudProviderDataBuilder) Empty() bool {
+	return b == nil || b.bitmap_ == 0
 }
 
 // AWS sets the value of the 'AWS' attribute to the given value.
@@ -62,21 +69,25 @@ func (b *CloudProviderDataBuilder) GCP(value *GCPBuilder) *CloudProviderDataBuil
 	return b
 }
 
-// KeyLocation sets the value of the 'key_location' attribute to the given value.
-//
-//
-func (b *CloudProviderDataBuilder) KeyLocation(value string) *CloudProviderDataBuilder {
-	b.keyLocation = value
+// AvailabilityZones sets the value of the 'availability_zones' attribute to the given values.
+func (b *CloudProviderDataBuilder) AvailabilityZones(values ...string) *CloudProviderDataBuilder {
+	b.availabilityZones = make([]string, len(values))
+	copy(b.availabilityZones, values)
 	b.bitmap_ |= 4
 	return b
 }
 
+// KeyLocation sets the value of the 'key_location' attribute to the given value.
+func (b *CloudProviderDataBuilder) KeyLocation(value string) *CloudProviderDataBuilder {
+	b.keyLocation = value
+	b.bitmap_ |= 8
+	return b
+}
+
 // KeyRingName sets the value of the 'key_ring_name' attribute to the given value.
-//
-//
 func (b *CloudProviderDataBuilder) KeyRingName(value string) *CloudProviderDataBuilder {
 	b.keyRingName = value
-	b.bitmap_ |= 8
+	b.bitmap_ |= 16
 	return b
 }
 
@@ -86,9 +97,22 @@ func (b *CloudProviderDataBuilder) KeyRingName(value string) *CloudProviderDataB
 func (b *CloudProviderDataBuilder) Region(value *CloudRegionBuilder) *CloudProviderDataBuilder {
 	b.region = value
 	if value != nil {
-		b.bitmap_ |= 16
+		b.bitmap_ |= 32
 	} else {
-		b.bitmap_ &^= 16
+		b.bitmap_ &^= 32
+	}
+	return b
+}
+
+// Version sets the value of the 'version' attribute to the given value.
+//
+// Representation of an _OpenShift_ version.
+func (b *CloudProviderDataBuilder) Version(value *VersionBuilder) *CloudProviderDataBuilder {
+	b.version = value
+	if value != nil {
+		b.bitmap_ |= 64
+	} else {
+		b.bitmap_ &^= 64
 	}
 	return b
 }
@@ -109,12 +133,23 @@ func (b *CloudProviderDataBuilder) Copy(object *CloudProviderData) *CloudProvide
 	} else {
 		b.gcp = nil
 	}
+	if object.availabilityZones != nil {
+		b.availabilityZones = make([]string, len(object.availabilityZones))
+		copy(b.availabilityZones, object.availabilityZones)
+	} else {
+		b.availabilityZones = nil
+	}
 	b.keyLocation = object.keyLocation
 	b.keyRingName = object.keyRingName
 	if object.region != nil {
 		b.region = NewCloudRegion().Copy(object.region)
 	} else {
 		b.region = nil
+	}
+	if object.version != nil {
+		b.version = NewVersion().Copy(object.version)
+	} else {
+		b.version = nil
 	}
 	return b
 }
@@ -135,10 +170,20 @@ func (b *CloudProviderDataBuilder) Build() (object *CloudProviderData, err error
 			return
 		}
 	}
+	if b.availabilityZones != nil {
+		object.availabilityZones = make([]string, len(b.availabilityZones))
+		copy(object.availabilityZones, b.availabilityZones)
+	}
 	object.keyLocation = b.keyLocation
 	object.keyRingName = b.keyRingName
 	if b.region != nil {
 		object.region, err = b.region.Build()
+		if err != nil {
+			return
+		}
+	}
+	if b.version != nil {
+		object.version, err = b.version.Build()
 		if err != nil {
 			return
 		}

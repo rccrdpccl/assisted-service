@@ -21,7 +21,6 @@ package v1 // github.com/openshift-online/ocm-sdk-go/clustersmgmt/v1
 
 import (
 	"io"
-	"net/http"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/openshift-online/ocm-sdk-go/helpers"
@@ -31,7 +30,10 @@ import (
 func MarshalInstanceIAMRoles(object *InstanceIAMRoles, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeInstanceIAMRoles(object, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -56,7 +58,6 @@ func writeInstanceIAMRoles(object *InstanceIAMRoles, stream *jsoniter.Stream) {
 		}
 		stream.WriteObjectField("worker_role_arn")
 		stream.WriteString(object.workerRoleARN)
-		count++
 	}
 	stream.WriteObjectEnd()
 }
@@ -64,9 +65,6 @@ func writeInstanceIAMRoles(object *InstanceIAMRoles, stream *jsoniter.Stream) {
 // UnmarshalInstanceIAMRoles reads a value of the 'instance_IAM_roles' type from the given
 // source, which can be an slice of bytes, a string or a reader.
 func UnmarshalInstanceIAMRoles(source interface{}) (object *InstanceIAMRoles, err error) {
-	if source == http.NoBody {
-		return
-	}
 	iterator, err := helpers.NewIterator(source)
 	if err != nil {
 		return

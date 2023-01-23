@@ -31,7 +31,10 @@ import (
 func MarshalQueueList(list []*Queue, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeQueueList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalQueueList(source interface{}) (items []*Queue, err error) {
 	return
 }
 
-// readQueueList reads list of values of the ''queue' type from
+// readQueueList reads list of values of the ”queue' type from
 // the given iterator.
 func readQueueList(iterator *jsoniter.Iterator) []*Queue {
 	list := []*Queue{}

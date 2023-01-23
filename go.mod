@@ -44,7 +44,7 @@ require (
 	github.com/nmstate/nmstate/rust/src/go/nmstate v0.0.0-20220811151154-801022633c42
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.20.0
-	github.com/openshift-online/ocm-sdk-go v0.1.205
+	github.com/openshift-online/ocm-sdk-go v0.1.311
 	github.com/openshift/api v0.0.0-20220824124051-d72820206113
 	github.com/openshift/assisted-image-service v0.0.0-20220506122314-2f689a1084b8
 	github.com/openshift/assisted-service/api v0.0.0
@@ -132,7 +132,6 @@ require (
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
 	github.com/go-openapi/jsonreference v0.20.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
-	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/golang/glog v1.0.0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.2 // indirect

@@ -21,7 +21,6 @@ package v1 // github.com/openshift-online/ocm-sdk-go/clustersmgmt/v1
 
 import (
 	"io"
-	"net/http"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/openshift-online/ocm-sdk-go/helpers"
@@ -31,7 +30,10 @@ import (
 func MarshalAlertInfo(object *AlertInfo, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeAlertInfo(object, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -56,7 +58,6 @@ func writeAlertInfo(object *AlertInfo, stream *jsoniter.Stream) {
 		}
 		stream.WriteObjectField("severity")
 		stream.WriteString(string(object.severity))
-		count++
 	}
 	stream.WriteObjectEnd()
 }
@@ -64,9 +65,6 @@ func writeAlertInfo(object *AlertInfo, stream *jsoniter.Stream) {
 // UnmarshalAlertInfo reads a value of the 'alert_info' type from the given
 // source, which can be an slice of bytes, a string or a reader.
 func UnmarshalAlertInfo(source interface{}) (object *AlertInfo, err error) {
-	if source == http.NoBody {
-		return
-	}
 	iterator, err := helpers.NewIterator(source)
 	if err != nil {
 		return

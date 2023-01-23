@@ -21,7 +21,6 @@ package v1 // github.com/openshift-online/ocm-sdk-go/clustersmgmt/v1
 
 import (
 	"io"
-	"net/http"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/openshift-online/ocm-sdk-go/helpers"
@@ -31,7 +30,10 @@ import (
 func MarshalCCS(object *CCS, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeCCS(object, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -79,7 +81,6 @@ func writeCCS(object *CCS, stream *jsoniter.Stream) {
 		}
 		stream.WriteObjectField("enabled")
 		stream.WriteBool(object.enabled)
-		count++
 	}
 	stream.WriteObjectEnd()
 }
@@ -87,9 +88,6 @@ func writeCCS(object *CCS, stream *jsoniter.Stream) {
 // UnmarshalCCS reads a value of the 'CCS' type from the given
 // source, which can be an slice of bytes, a string or a reader.
 func UnmarshalCCS(source interface{}) (object *CCS, err error) {
-	if source == http.NoBody {
-		return
-	}
 	iterator, err := helpers.NewIterator(source)
 	if err != nil {
 		return

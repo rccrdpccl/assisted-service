@@ -31,7 +31,10 @@ import (
 func MarshalFloatList(list []float64, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeFloatList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalFloatList(source interface{}) (items []float64, err error) {
 	return
 }
 
-// readFloatList reads list of values of the ''float' type from
+// readFloatList reads list of values of the ”float' type from
 // the given iterator.
 func readFloatList(iterator *jsoniter.Iterator) []float64 {
 	list := []float64{}

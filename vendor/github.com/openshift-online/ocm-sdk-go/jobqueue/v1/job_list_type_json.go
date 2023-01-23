@@ -31,7 +31,10 @@ import (
 func MarshalJobList(list []*Job, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeJobList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalJobList(source interface{}) (items []*Job, err error) {
 	return
 }
 
-// readJobList reads list of values of the ''job' type from
+// readJobList reads list of values of the ”job' type from
 // the given iterator.
 func readJobList(iterator *jsoniter.Iterator) []*Job {
 	list := []*Job{}

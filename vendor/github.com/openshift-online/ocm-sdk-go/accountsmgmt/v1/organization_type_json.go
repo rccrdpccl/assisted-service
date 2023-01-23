@@ -21,7 +21,6 @@ package v1 // github.com/openshift-online/ocm-sdk-go/accountsmgmt/v1
 
 import (
 	"io"
-	"net/http"
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
@@ -32,7 +31,10 @@ import (
 func MarshalOrganization(object *Organization, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeOrganization(object, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -125,7 +127,6 @@ func writeOrganization(object *Organization, stream *jsoniter.Stream) {
 		}
 		stream.WriteObjectField("updated_at")
 		stream.WriteString((object.updatedAt).Format(time.RFC3339))
-		count++
 	}
 	stream.WriteObjectEnd()
 }
@@ -133,9 +134,6 @@ func writeOrganization(object *Organization, stream *jsoniter.Stream) {
 // UnmarshalOrganization reads a value of the 'organization' type from the given
 // source, which can be an slice of bytes, a string or a reader.
 func UnmarshalOrganization(source interface{}) (object *Organization, err error) {
-	if source == http.NoBody {
-		return
-	}
 	iterator, err := helpers.NewIterator(source)
 	if err != nil {
 		return
