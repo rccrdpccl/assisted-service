@@ -21,7 +21,6 @@ package v1 // github.com/openshift-online/ocm-sdk-go/accountsmgmt/v1
 
 import (
 	"io"
-	"net/http"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/openshift-online/ocm-sdk-go/helpers"
@@ -31,7 +30,10 @@ import (
 func MarshalFeatureToggle(object *FeatureToggle, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeFeatureToggle(object, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -70,7 +72,6 @@ func writeFeatureToggle(object *FeatureToggle, stream *jsoniter.Stream) {
 		}
 		stream.WriteObjectField("enabled")
 		stream.WriteBool(object.enabled)
-		count++
 	}
 	stream.WriteObjectEnd()
 }
@@ -78,9 +79,6 @@ func writeFeatureToggle(object *FeatureToggle, stream *jsoniter.Stream) {
 // UnmarshalFeatureToggle reads a value of the 'feature_toggle' type from the given
 // source, which can be an slice of bytes, a string or a reader.
 func UnmarshalFeatureToggle(source interface{}) (object *FeatureToggle, err error) {
-	if source == http.NoBody {
-		return
-	}
 	iterator, err := helpers.NewIterator(source)
 	if err != nil {
 		return

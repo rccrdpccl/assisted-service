@@ -31,7 +31,10 @@ import (
 func MarshalAWSMachinePoolList(list []*AWSMachinePool, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeAWSMachinePoolList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalAWSMachinePoolList(source interface{}) (items []*AWSMachinePool, e
 	return
 }
 
-// readAWSMachinePoolList reads list of values of the ''AWS_machine_pool' type from
+// readAWSMachinePoolList reads list of values of the ”AWS_machine_pool' type from
 // the given iterator.
 func readAWSMachinePoolList(iterator *jsoniter.Iterator) []*AWSMachinePool {
 	list := []*AWSMachinePool{}

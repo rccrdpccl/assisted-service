@@ -21,7 +21,6 @@ package v1 // github.com/openshift-online/ocm-sdk-go/accountsmgmt/v1
 
 import (
 	"io"
-	"net/http"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/openshift-online/ocm-sdk-go/helpers"
@@ -31,7 +30,10 @@ import (
 func MarshalQuotaCost(object *QuotaCost, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeQuotaCost(object, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -49,7 +51,16 @@ func writeQuotaCost(object *QuotaCost, stream *jsoniter.Stream) {
 		stream.WriteInt(object.allowed)
 		count++
 	}
-	present_ = object.bitmap_&2 != 0
+	present_ = object.bitmap_&2 != 0 && object.cloudAccounts != nil
+	if present_ {
+		if count > 0 {
+			stream.WriteMore()
+		}
+		stream.WriteObjectField("cloud_accounts")
+		writeCloudAccountList(object.cloudAccounts, stream)
+		count++
+	}
+	present_ = object.bitmap_&4 != 0
 	if present_ {
 		if count > 0 {
 			stream.WriteMore()
@@ -58,7 +69,7 @@ func writeQuotaCost(object *QuotaCost, stream *jsoniter.Stream) {
 		stream.WriteInt(object.consumed)
 		count++
 	}
-	present_ = object.bitmap_&4 != 0
+	present_ = object.bitmap_&8 != 0
 	if present_ {
 		if count > 0 {
 			stream.WriteMore()
@@ -67,7 +78,7 @@ func writeQuotaCost(object *QuotaCost, stream *jsoniter.Stream) {
 		stream.WriteString(object.organizationID)
 		count++
 	}
-	present_ = object.bitmap_&8 != 0
+	present_ = object.bitmap_&16 != 0
 	if present_ {
 		if count > 0 {
 			stream.WriteMore()
@@ -76,14 +87,13 @@ func writeQuotaCost(object *QuotaCost, stream *jsoniter.Stream) {
 		stream.WriteString(object.quotaID)
 		count++
 	}
-	present_ = object.bitmap_&16 != 0 && object.relatedResources != nil
+	present_ = object.bitmap_&32 != 0 && object.relatedResources != nil
 	if present_ {
 		if count > 0 {
 			stream.WriteMore()
 		}
 		stream.WriteObjectField("related_resources")
 		writeRelatedResourceList(object.relatedResources, stream)
-		count++
 	}
 	stream.WriteObjectEnd()
 }
@@ -91,9 +101,6 @@ func writeQuotaCost(object *QuotaCost, stream *jsoniter.Stream) {
 // UnmarshalQuotaCost reads a value of the 'quota_cost' type from the given
 // source, which can be an slice of bytes, a string or a reader.
 func UnmarshalQuotaCost(source interface{}) (object *QuotaCost, err error) {
-	if source == http.NoBody {
-		return
-	}
 	iterator, err := helpers.NewIterator(source)
 	if err != nil {
 		return
@@ -116,22 +123,26 @@ func readQuotaCost(iterator *jsoniter.Iterator) *QuotaCost {
 			value := iterator.ReadInt()
 			object.allowed = value
 			object.bitmap_ |= 1
+		case "cloud_accounts":
+			value := readCloudAccountList(iterator)
+			object.cloudAccounts = value
+			object.bitmap_ |= 2
 		case "consumed":
 			value := iterator.ReadInt()
 			object.consumed = value
-			object.bitmap_ |= 2
+			object.bitmap_ |= 4
 		case "organization_id":
 			value := iterator.ReadString()
 			object.organizationID = value
-			object.bitmap_ |= 4
+			object.bitmap_ |= 8
 		case "quota_id":
 			value := iterator.ReadString()
 			object.quotaID = value
-			object.bitmap_ |= 8
+			object.bitmap_ |= 16
 		case "related_resources":
 			value := readRelatedResourceList(iterator)
 			object.relatedResources = value
-			object.bitmap_ |= 16
+			object.bitmap_ |= 32
 		default:
 			iterator.ReadAny()
 		}

@@ -20,14 +20,13 @@ limitations under the License.
 package v1 // github.com/openshift-online/ocm-sdk-go/accountsmgmt/v1
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 
-	jsoniter "github.com/json-iterator/go"
 	"github.com/openshift-online/ocm-sdk-go/errors"
 	"github.com/openshift-online/ocm-sdk-go/helpers"
 )
@@ -81,9 +80,14 @@ func (r *NotifyAddRequest) Header(name string, value interface{}) *NotifyAddRequ
 	return r
 }
 
+// Impersonate wraps requests on behalf of another user.
+// Note: Services that do not support this feature may silently ignore this call.
+func (r *NotifyAddRequest) Impersonate(user string) *NotifyAddRequest {
+	helpers.AddImpersonationHeader(&r.header, user)
+	return r
+}
+
 // Body sets the value of the 'body' parameter.
-//
-//
 func (r *NotifyAddRequest) Body(value *SubscriptionNotify) *NotifyAddRequest {
 	r.body = value
 	return r
@@ -114,7 +118,7 @@ func (r *NotifyAddRequest) SendContext(ctx context.Context) (result *NotifyAddRe
 		Method: "POST",
 		URL:    uri,
 		Header: header,
-		Body:   ioutil.NopCloser(buffer),
+		Body:   io.NopCloser(buffer),
 	}
 	if ctx != nil {
 		request = request.WithContext(ctx)
@@ -127,29 +131,25 @@ func (r *NotifyAddRequest) SendContext(ctx context.Context) (result *NotifyAddRe
 	result = &NotifyAddResponse{}
 	result.status = response.StatusCode
 	result.header = response.Header
+	reader := bufio.NewReader(response.Body)
+	_, err = reader.Peek(1)
+	if err == io.EOF {
+		err = nil
+		return
+	}
 	if result.status >= 400 {
-		result.err, err = errors.UnmarshalError(response.Body)
+		result.err, err = errors.UnmarshalErrorStatus(reader, result.status)
 		if err != nil {
 			return
 		}
 		err = result.err
 		return
 	}
-	err = readNotifyAddResponse(result, response.Body)
+	err = readNotifyAddResponse(result, reader)
 	if err != nil {
 		return
 	}
 	return
-}
-
-// marshall is the method used internally to marshal requests for the
-// 'add' method.
-func (r *NotifyAddRequest) marshal(writer io.Writer) error {
-	stream := helpers.NewStream(writer)
-	r.stream(stream)
-	return stream.Error
-}
-func (r *NotifyAddRequest) stream(stream *jsoniter.Stream) {
 }
 
 // NotifyAddResponse is the response for the 'add' method.
@@ -185,8 +185,6 @@ func (r *NotifyAddResponse) Error() *errors.Error {
 }
 
 // Body returns the value of the 'body' parameter.
-//
-//
 func (r *NotifyAddResponse) Body() *SubscriptionNotify {
 	if r == nil {
 		return nil
@@ -196,8 +194,6 @@ func (r *NotifyAddResponse) Body() *SubscriptionNotify {
 
 // GetBody returns the value of the 'body' parameter and
 // a flag indicating if the parameter has a value.
-//
-//
 func (r *NotifyAddResponse) GetBody() (value *SubscriptionNotify, ok bool) {
 	ok = r != nil && r.body != nil
 	if ok {

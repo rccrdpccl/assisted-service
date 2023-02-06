@@ -24,20 +24,21 @@ import (
 )
 
 // LogEntryBuilder contains the data and logic needed to build 'log_entry' objects.
-//
-//
 type LogEntryBuilder struct {
-	bitmap_      uint32
-	id           string
-	href         string
-	clusterUUID  string
-	description  string
-	serviceName  string
-	severity     Severity
-	summary      string
-	timestamp    time.Time
-	username     string
-	internalOnly bool
+	bitmap_        uint32
+	id             string
+	href           string
+	clusterID      string
+	clusterUUID    string
+	description    string
+	eventStreamID  string
+	serviceName    string
+	severity       Severity
+	subscriptionID string
+	summary        string
+	timestamp      time.Time
+	username       string
+	internalOnly   bool
 }
 
 // NewLogEntry creates a new builder of 'log_entry' objects.
@@ -65,75 +66,85 @@ func (b *LogEntryBuilder) HREF(value string) *LogEntryBuilder {
 	return b
 }
 
-// ClusterUUID sets the value of the 'cluster_UUID' attribute to the given value.
-//
-//
-func (b *LogEntryBuilder) ClusterUUID(value string) *LogEntryBuilder {
-	b.clusterUUID = value
+// Empty returns true if the builder is empty, i.e. no attribute has a value.
+func (b *LogEntryBuilder) Empty() bool {
+	return b == nil || b.bitmap_&^1 == 0
+}
+
+// ClusterID sets the value of the 'cluster_ID' attribute to the given value.
+func (b *LogEntryBuilder) ClusterID(value string) *LogEntryBuilder {
+	b.clusterID = value
 	b.bitmap_ |= 8
 	return b
 }
 
-// Description sets the value of the 'description' attribute to the given value.
-//
-//
-func (b *LogEntryBuilder) Description(value string) *LogEntryBuilder {
-	b.description = value
+// ClusterUUID sets the value of the 'cluster_UUID' attribute to the given value.
+func (b *LogEntryBuilder) ClusterUUID(value string) *LogEntryBuilder {
+	b.clusterUUID = value
 	b.bitmap_ |= 16
 	return b
 }
 
-// InternalOnly sets the value of the 'internal_only' attribute to the given value.
-//
-//
-func (b *LogEntryBuilder) InternalOnly(value bool) *LogEntryBuilder {
-	b.internalOnly = value
+// Description sets the value of the 'description' attribute to the given value.
+func (b *LogEntryBuilder) Description(value string) *LogEntryBuilder {
+	b.description = value
 	b.bitmap_ |= 32
 	return b
 }
 
-// ServiceName sets the value of the 'service_name' attribute to the given value.
-//
-//
-func (b *LogEntryBuilder) ServiceName(value string) *LogEntryBuilder {
-	b.serviceName = value
+// EventStreamID sets the value of the 'event_stream_ID' attribute to the given value.
+func (b *LogEntryBuilder) EventStreamID(value string) *LogEntryBuilder {
+	b.eventStreamID = value
 	b.bitmap_ |= 64
 	return b
 }
 
-// Severity sets the value of the 'severity' attribute to the given value.
-//
-//
-func (b *LogEntryBuilder) Severity(value Severity) *LogEntryBuilder {
-	b.severity = value
+// InternalOnly sets the value of the 'internal_only' attribute to the given value.
+func (b *LogEntryBuilder) InternalOnly(value bool) *LogEntryBuilder {
+	b.internalOnly = value
 	b.bitmap_ |= 128
 	return b
 }
 
-// Summary sets the value of the 'summary' attribute to the given value.
-//
-//
-func (b *LogEntryBuilder) Summary(value string) *LogEntryBuilder {
-	b.summary = value
+// ServiceName sets the value of the 'service_name' attribute to the given value.
+func (b *LogEntryBuilder) ServiceName(value string) *LogEntryBuilder {
+	b.serviceName = value
 	b.bitmap_ |= 256
 	return b
 }
 
-// Timestamp sets the value of the 'timestamp' attribute to the given value.
-//
-//
-func (b *LogEntryBuilder) Timestamp(value time.Time) *LogEntryBuilder {
-	b.timestamp = value
+// Severity sets the value of the 'severity' attribute to the given value.
+func (b *LogEntryBuilder) Severity(value Severity) *LogEntryBuilder {
+	b.severity = value
 	b.bitmap_ |= 512
 	return b
 }
 
+// SubscriptionID sets the value of the 'subscription_ID' attribute to the given value.
+func (b *LogEntryBuilder) SubscriptionID(value string) *LogEntryBuilder {
+	b.subscriptionID = value
+	b.bitmap_ |= 1024
+	return b
+}
+
+// Summary sets the value of the 'summary' attribute to the given value.
+func (b *LogEntryBuilder) Summary(value string) *LogEntryBuilder {
+	b.summary = value
+	b.bitmap_ |= 2048
+	return b
+}
+
+// Timestamp sets the value of the 'timestamp' attribute to the given value.
+func (b *LogEntryBuilder) Timestamp(value time.Time) *LogEntryBuilder {
+	b.timestamp = value
+	b.bitmap_ |= 4096
+	return b
+}
+
 // Username sets the value of the 'username' attribute to the given value.
-//
-//
 func (b *LogEntryBuilder) Username(value string) *LogEntryBuilder {
 	b.username = value
-	b.bitmap_ |= 1024
+	b.bitmap_ |= 8192
 	return b
 }
 
@@ -145,11 +156,14 @@ func (b *LogEntryBuilder) Copy(object *LogEntry) *LogEntryBuilder {
 	b.bitmap_ = object.bitmap_
 	b.id = object.id
 	b.href = object.href
+	b.clusterID = object.clusterID
 	b.clusterUUID = object.clusterUUID
 	b.description = object.description
+	b.eventStreamID = object.eventStreamID
 	b.internalOnly = object.internalOnly
 	b.serviceName = object.serviceName
 	b.severity = object.severity
+	b.subscriptionID = object.subscriptionID
 	b.summary = object.summary
 	b.timestamp = object.timestamp
 	b.username = object.username
@@ -162,11 +176,14 @@ func (b *LogEntryBuilder) Build() (object *LogEntry, err error) {
 	object.id = b.id
 	object.href = b.href
 	object.bitmap_ = b.bitmap_
+	object.clusterID = b.clusterID
 	object.clusterUUID = b.clusterUUID
 	object.description = b.description
+	object.eventStreamID = b.eventStreamID
 	object.internalOnly = b.internalOnly
 	object.serviceName = b.serviceName
 	object.severity = b.severity
+	object.subscriptionID = b.subscriptionID
 	object.summary = b.summary
 	object.timestamp = b.timestamp
 	object.username = b.username

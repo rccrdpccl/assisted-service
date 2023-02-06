@@ -21,7 +21,6 @@ package v1 // github.com/openshift-online/ocm-sdk-go/accountsmgmt/v1
 
 import (
 	"io"
-	"net/http"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/openshift-online/ocm-sdk-go/helpers"
@@ -31,7 +30,10 @@ import (
 func MarshalFeatureToggleQueryRequest(object *FeatureToggleQueryRequest, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeFeatureToggleQueryRequest(object, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -47,7 +49,6 @@ func writeFeatureToggleQueryRequest(object *FeatureToggleQueryRequest, stream *j
 		}
 		stream.WriteObjectField("organization_id")
 		stream.WriteString(object.organizationID)
-		count++
 	}
 	stream.WriteObjectEnd()
 }
@@ -55,9 +56,6 @@ func writeFeatureToggleQueryRequest(object *FeatureToggleQueryRequest, stream *j
 // UnmarshalFeatureToggleQueryRequest reads a value of the 'feature_toggle_query_request' type from the given
 // source, which can be an slice of bytes, a string or a reader.
 func UnmarshalFeatureToggleQueryRequest(source interface{}) (object *FeatureToggleQueryRequest, err error) {
-	if source == http.NoBody {
-		return
-	}
 	iterator, err := helpers.NewIterator(source)
 	if err != nil {
 		return

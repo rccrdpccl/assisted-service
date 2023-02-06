@@ -31,7 +31,10 @@ import (
 func MarshalGCPFlavourList(list []*GCPFlavour, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeGCPFlavourList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalGCPFlavourList(source interface{}) (items []*GCPFlavour, err error
 	return
 }
 
-// readGCPFlavourList reads list of values of the ''GCP_flavour' type from
+// readGCPFlavourList reads list of values of the ”GCP_flavour' type from
 // the given iterator.
 func readGCPFlavourList(iterator *jsoniter.Iterator) []*GCPFlavour {
 	list := []*GCPFlavour{}

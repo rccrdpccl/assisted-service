@@ -31,7 +31,10 @@ import (
 func MarshalAccessReviewResponseList(list []*AccessReviewResponse, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeAccessReviewResponseList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalAccessReviewResponseList(source interface{}) (items []*AccessRevie
 	return
 }
 
-// readAccessReviewResponseList reads list of values of the ''access_review_response' type from
+// readAccessReviewResponseList reads list of values of the ”access_review_response' type from
 // the given iterator.
 func readAccessReviewResponseList(iterator *jsoniter.Iterator) []*AccessReviewResponse {
 	list := []*AccessReviewResponse{}
