@@ -21,7 +21,6 @@ package v1 // github.com/openshift-online/ocm-sdk-go/clustersmgmt/v1
 
 import (
 	"io"
-	"net/http"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/openshift-online/ocm-sdk-go/helpers"
@@ -31,7 +30,10 @@ import (
 func MarshalDNS(object *DNS, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeDNS(object, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -47,7 +49,6 @@ func writeDNS(object *DNS, stream *jsoniter.Stream) {
 		}
 		stream.WriteObjectField("base_domain")
 		stream.WriteString(object.baseDomain)
-		count++
 	}
 	stream.WriteObjectEnd()
 }
@@ -55,9 +56,6 @@ func writeDNS(object *DNS, stream *jsoniter.Stream) {
 // UnmarshalDNS reads a value of the 'DNS' type from the given
 // source, which can be an slice of bytes, a string or a reader.
 func UnmarshalDNS(source interface{}) (object *DNS, err error) {
-	if source == http.NoBody {
-		return
-	}
 	iterator, err := helpers.NewIterator(source)
 	if err != nil {
 		return

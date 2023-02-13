@@ -21,7 +21,6 @@ package v1 // github.com/openshift-online/ocm-sdk-go/clustersmgmt/v1
 
 import (
 	"io"
-	"net/http"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/openshift-online/ocm-sdk-go/helpers"
@@ -31,7 +30,10 @@ import (
 func MarshalGithubIdentityProvider(object *GithubIdentityProvider, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeGithubIdentityProvider(object, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -92,7 +94,6 @@ func writeGithubIdentityProvider(object *GithubIdentityProvider, stream *jsonite
 		}
 		stream.WriteObjectField("teams")
 		writeStringList(object.teams, stream)
-		count++
 	}
 	stream.WriteObjectEnd()
 }
@@ -100,9 +101,6 @@ func writeGithubIdentityProvider(object *GithubIdentityProvider, stream *jsonite
 // UnmarshalGithubIdentityProvider reads a value of the 'github_identity_provider' type from the given
 // source, which can be an slice of bytes, a string or a reader.
 func UnmarshalGithubIdentityProvider(source interface{}) (object *GithubIdentityProvider, err error) {
-	if source == http.NoBody {
-		return
-	}
 	iterator, err := helpers.NewIterator(source)
 	if err != nil {
 		return

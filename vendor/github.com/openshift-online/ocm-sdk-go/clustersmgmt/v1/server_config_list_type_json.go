@@ -31,7 +31,10 @@ import (
 func MarshalServerConfigList(list []*ServerConfig, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeServerConfigList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalServerConfigList(source interface{}) (items []*ServerConfig, err e
 	return
 }
 
-// readServerConfigList reads list of values of the ''server_config' type from
+// readServerConfigList reads list of values of the ”server_config' type from
 // the given iterator.
 func readServerConfigList(iterator *jsoniter.Iterator) []*ServerConfig {
 	list := []*ServerConfig{}

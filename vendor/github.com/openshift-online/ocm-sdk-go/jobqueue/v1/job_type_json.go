@@ -21,7 +21,6 @@ package v1 // github.com/openshift-online/ocm-sdk-go/jobqueue/v1
 
 import (
 	"io"
-	"net/http"
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
@@ -32,7 +31,10 @@ import (
 func MarshalJob(object *Job, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeJob(object, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -116,7 +118,6 @@ func writeJob(object *Job, stream *jsoniter.Stream) {
 		}
 		stream.WriteObjectField("updated_at")
 		stream.WriteString((object.updatedAt).Format(time.RFC3339))
-		count++
 	}
 	stream.WriteObjectEnd()
 }
@@ -124,9 +125,6 @@ func writeJob(object *Job, stream *jsoniter.Stream) {
 // UnmarshalJob reads a value of the 'job' type from the given
 // source, which can be an slice of bytes, a string or a reader.
 func UnmarshalJob(source interface{}) (object *Job, err error) {
-	if source == http.NoBody {
-		return
-	}
 	iterator, err := helpers.NewIterator(source)
 	if err != nil {
 		return

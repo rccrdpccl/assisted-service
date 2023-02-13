@@ -21,7 +21,6 @@ package v1 // github.com/openshift-online/ocm-sdk-go/clustersmgmt/v1
 
 import (
 	"io"
-	"net/http"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/openshift-online/ocm-sdk-go/helpers"
@@ -31,7 +30,10 @@ import (
 func MarshalGCP(object *GCP, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeGCP(object, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -128,7 +130,6 @@ func writeGCP(object *GCP, stream *jsoniter.Stream) {
 		}
 		stream.WriteObjectField("type")
 		stream.WriteString(object.type_)
-		count++
 	}
 	stream.WriteObjectEnd()
 }
@@ -136,9 +137,6 @@ func writeGCP(object *GCP, stream *jsoniter.Stream) {
 // UnmarshalGCP reads a value of the 'GCP' type from the given
 // source, which can be an slice of bytes, a string or a reader.
 func UnmarshalGCP(source interface{}) (object *GCP, err error) {
-	if source == http.NoBody {
-		return
-	}
 	iterator, err := helpers.NewIterator(source)
 	if err != nil {
 		return
