@@ -31,7 +31,10 @@ import (
 func MarshalListeningMethodList(list []ListeningMethod, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeListeningMethodList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalListeningMethodList(source interface{}) (items []ListeningMethod, 
 	return
 }
 
-// readListeningMethodList reads list of values of the ''listening_method' type from
+// readListeningMethodList reads list of values of the ”listening_method' type from
 // the given iterator.
 func readListeningMethodList(iterator *jsoniter.Iterator) []ListeningMethod {
 	list := []ListeningMethod{}

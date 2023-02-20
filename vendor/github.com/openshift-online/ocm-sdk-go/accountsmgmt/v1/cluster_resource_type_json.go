@@ -21,7 +21,6 @@ package v1 // github.com/openshift-online/ocm-sdk-go/accountsmgmt/v1
 
 import (
 	"io"
-	"net/http"
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
@@ -32,7 +31,10 @@ import (
 func MarshalClusterResource(object *ClusterResource, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeClusterResource(object, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -66,7 +68,6 @@ func writeClusterResource(object *ClusterResource, stream *jsoniter.Stream) {
 		}
 		stream.WriteObjectField("used")
 		writeValueUnit(object.used, stream)
-		count++
 	}
 	stream.WriteObjectEnd()
 }
@@ -74,9 +75,6 @@ func writeClusterResource(object *ClusterResource, stream *jsoniter.Stream) {
 // UnmarshalClusterResource reads a value of the 'cluster_resource' type from the given
 // source, which can be an slice of bytes, a string or a reader.
 func UnmarshalClusterResource(source interface{}) (object *ClusterResource, err error) {
-	if source == http.NoBody {
-		return
-	}
 	iterator, err := helpers.NewIterator(source)
 	if err != nil {
 		return

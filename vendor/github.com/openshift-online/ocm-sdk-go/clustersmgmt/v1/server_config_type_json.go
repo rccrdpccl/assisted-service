@@ -21,7 +21,6 @@ package v1 // github.com/openshift-online/ocm-sdk-go/clustersmgmt/v1
 
 import (
 	"io"
-	"net/http"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/openshift-online/ocm-sdk-go/helpers"
@@ -31,7 +30,10 @@ import (
 func MarshalServerConfig(object *ServerConfig, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeServerConfig(object, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -68,9 +70,17 @@ func writeServerConfig(object *ServerConfig, stream *jsoniter.Stream) {
 		if count > 0 {
 			stream.WriteMore()
 		}
+		stream.WriteObjectField("kubeconfig")
+		stream.WriteString(object.kubeconfig)
+		count++
+	}
+	present_ = object.bitmap_&16 != 0
+	if present_ {
+		if count > 0 {
+			stream.WriteMore()
+		}
 		stream.WriteObjectField("server")
 		stream.WriteString(object.server)
-		count++
 	}
 	stream.WriteObjectEnd()
 }
@@ -78,9 +88,6 @@ func writeServerConfig(object *ServerConfig, stream *jsoniter.Stream) {
 // UnmarshalServerConfig reads a value of the 'server_config' type from the given
 // source, which can be an slice of bytes, a string or a reader.
 func UnmarshalServerConfig(source interface{}) (object *ServerConfig, err error) {
-	if source == http.NoBody {
-		return
-	}
 	iterator, err := helpers.NewIterator(source)
 	if err != nil {
 		return
@@ -110,10 +117,14 @@ func readServerConfig(iterator *jsoniter.Iterator) *ServerConfig {
 		case "href":
 			object.href = iterator.ReadString()
 			object.bitmap_ |= 4
+		case "kubeconfig":
+			value := iterator.ReadString()
+			object.kubeconfig = value
+			object.bitmap_ |= 8
 		case "server":
 			value := iterator.ReadString()
 			object.server = value
-			object.bitmap_ |= 8
+			object.bitmap_ |= 16
 		default:
 			iterator.ReadAny()
 		}

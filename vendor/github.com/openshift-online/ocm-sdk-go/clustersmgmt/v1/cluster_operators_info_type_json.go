@@ -21,7 +21,6 @@ package v1 // github.com/openshift-online/ocm-sdk-go/clustersmgmt/v1
 
 import (
 	"io"
-	"net/http"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/openshift-online/ocm-sdk-go/helpers"
@@ -31,7 +30,10 @@ import (
 func MarshalClusterOperatorsInfo(object *ClusterOperatorsInfo, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeClusterOperatorsInfo(object, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -47,7 +49,6 @@ func writeClusterOperatorsInfo(object *ClusterOperatorsInfo, stream *jsoniter.St
 		}
 		stream.WriteObjectField("operators")
 		writeClusterOperatorInfoList(object.operators, stream)
-		count++
 	}
 	stream.WriteObjectEnd()
 }
@@ -55,9 +56,6 @@ func writeClusterOperatorsInfo(object *ClusterOperatorsInfo, stream *jsoniter.St
 // UnmarshalClusterOperatorsInfo reads a value of the 'cluster_operators_info' type from the given
 // source, which can be an slice of bytes, a string or a reader.
 func UnmarshalClusterOperatorsInfo(source interface{}) (object *ClusterOperatorsInfo, err error) {
-	if source == http.NoBody {
-		return
-	}
 	iterator, err := helpers.NewIterator(source)
 	if err != nil {
 		return

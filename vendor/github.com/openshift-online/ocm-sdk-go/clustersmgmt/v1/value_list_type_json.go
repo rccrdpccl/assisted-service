@@ -31,7 +31,10 @@ import (
 func MarshalValueList(list []*Value, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeValueList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalValueList(source interface{}) (items []*Value, err error) {
 	return
 }
 
-// readValueList reads list of values of the ''value' type from
+// readValueList reads list of values of the ”value' type from
 // the given iterator.
 func readValueList(iterator *jsoniter.Iterator) []*Value {
 	list := []*Value{}

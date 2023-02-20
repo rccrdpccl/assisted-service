@@ -21,7 +21,6 @@ package v1 // github.com/openshift-online/ocm-sdk-go/clustersmgmt/v1
 
 import (
 	"io"
-	"net/http"
 	"sort"
 
 	jsoniter "github.com/json-iterator/go"
@@ -32,7 +31,10 @@ import (
 func MarshalAddOnRequirement(object *AddOnRequirement, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeAddOnRequirement(object, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -97,15 +99,20 @@ func writeAddOnRequirement(object *AddOnRequirement, stream *jsoniter.Stream) {
 		stream.WriteString(object.resource)
 		count++
 	}
+	present_ = object.bitmap_&16 != 0 && object.status != nil
+	if present_ {
+		if count > 0 {
+			stream.WriteMore()
+		}
+		stream.WriteObjectField("status")
+		writeAddOnRequirementStatus(object.status, stream)
+	}
 	stream.WriteObjectEnd()
 }
 
 // UnmarshalAddOnRequirement reads a value of the 'add_on_requirement' type from the given
 // source, which can be an slice of bytes, a string or a reader.
 func UnmarshalAddOnRequirement(source interface{}) (object *AddOnRequirement, err error) {
-	if source == http.NoBody {
-		return
-	}
 	iterator, err := helpers.NewIterator(source)
 	if err != nil {
 		return
@@ -149,6 +156,10 @@ func readAddOnRequirement(iterator *jsoniter.Iterator) *AddOnRequirement {
 			value := iterator.ReadString()
 			object.resource = value
 			object.bitmap_ |= 8
+		case "status":
+			value := readAddOnRequirementStatus(iterator)
+			object.status = value
+			object.bitmap_ |= 16
 		default:
 			iterator.ReadAny()
 		}

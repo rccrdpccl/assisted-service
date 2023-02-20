@@ -31,7 +31,10 @@ import (
 func MarshalIdentityProviderTypeList(list []IdentityProviderType, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeIdentityProviderTypeList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalIdentityProviderTypeList(source interface{}) (items []IdentityProv
 	return
 }
 
-// readIdentityProviderTypeList reads list of values of the ''identity_provider_type' type from
+// readIdentityProviderTypeList reads list of values of the ”identity_provider_type' type from
 // the given iterator.
 func readIdentityProviderTypeList(iterator *jsoniter.Iterator) []IdentityProviderType {
 	list := []IdentityProviderType{}

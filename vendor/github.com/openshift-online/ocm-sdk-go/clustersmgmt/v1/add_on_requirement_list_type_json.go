@@ -31,7 +31,10 @@ import (
 func MarshalAddOnRequirementList(list []*AddOnRequirement, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeAddOnRequirementList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalAddOnRequirementList(source interface{}) (items []*AddOnRequiremen
 	return
 }
 
-// readAddOnRequirementList reads list of values of the ''add_on_requirement' type from
+// readAddOnRequirementList reads list of values of the ”add_on_requirement' type from
 // the given iterator.
 func readAddOnRequirementList(iterator *jsoniter.Iterator) []*AddOnRequirement {
 	list := []*AddOnRequirement{}

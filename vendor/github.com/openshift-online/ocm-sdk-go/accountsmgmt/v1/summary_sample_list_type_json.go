@@ -31,7 +31,10 @@ import (
 func MarshalSummarySampleList(list []*SummarySample, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeSummarySampleList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalSummarySampleList(source interface{}) (items []*SummarySample, err
 	return
 }
 
-// readSummarySampleList reads list of values of the ''summary_sample' type from
+// readSummarySampleList reads list of values of the ”summary_sample' type from
 // the given iterator.
 func readSummarySampleList(iterator *jsoniter.Iterator) []*SummarySample {
 	list := []*SummarySample{}

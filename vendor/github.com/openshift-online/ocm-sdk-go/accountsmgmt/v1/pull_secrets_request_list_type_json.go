@@ -31,7 +31,10 @@ import (
 func MarshalPullSecretsRequestList(list []*PullSecretsRequest, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writePullSecretsRequestList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalPullSecretsRequestList(source interface{}) (items []*PullSecretsRe
 	return
 }
 
-// readPullSecretsRequestList reads list of values of the ''pull_secrets_request' type from
+// readPullSecretsRequestList reads list of values of the ”pull_secrets_request' type from
 // the given iterator.
 func readPullSecretsRequestList(iterator *jsoniter.Iterator) []*PullSecretsRequest {
 	list := []*PullSecretsRequest{}

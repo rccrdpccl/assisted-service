@@ -31,7 +31,10 @@ import (
 func MarshalTermsReviewRequestList(list []*TermsReviewRequest, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeTermsReviewRequestList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalTermsReviewRequestList(source interface{}) (items []*TermsReviewRe
 	return
 }
 
-// readTermsReviewRequestList reads list of values of the ''terms_review_request' type from
+// readTermsReviewRequestList reads list of values of the ”terms_review_request' type from
 // the given iterator.
 func readTermsReviewRequestList(iterator *jsoniter.Iterator) []*TermsReviewRequest {
 	list := []*TermsReviewRequest{}

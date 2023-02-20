@@ -23,10 +23,11 @@ package v1 // github.com/openshift-online/ocm-sdk-go/clustersmgmt/v1
 //
 // Representation of a server config
 type ServerConfigBuilder struct {
-	bitmap_ uint32
-	id      string
-	href    string
-	server  string
+	bitmap_    uint32
+	id         string
+	href       string
+	kubeconfig string
+	server     string
 }
 
 // NewServerConfig creates a new builder of 'server_config' objects.
@@ -54,12 +55,22 @@ func (b *ServerConfigBuilder) HREF(value string) *ServerConfigBuilder {
 	return b
 }
 
+// Empty returns true if the builder is empty, i.e. no attribute has a value.
+func (b *ServerConfigBuilder) Empty() bool {
+	return b == nil || b.bitmap_&^1 == 0
+}
+
+// Kubeconfig sets the value of the 'kubeconfig' attribute to the given value.
+func (b *ServerConfigBuilder) Kubeconfig(value string) *ServerConfigBuilder {
+	b.kubeconfig = value
+	b.bitmap_ |= 8
+	return b
+}
+
 // Server sets the value of the 'server' attribute to the given value.
-//
-//
 func (b *ServerConfigBuilder) Server(value string) *ServerConfigBuilder {
 	b.server = value
-	b.bitmap_ |= 8
+	b.bitmap_ |= 16
 	return b
 }
 
@@ -71,6 +82,7 @@ func (b *ServerConfigBuilder) Copy(object *ServerConfig) *ServerConfigBuilder {
 	b.bitmap_ = object.bitmap_
 	b.id = object.id
 	b.href = object.href
+	b.kubeconfig = object.kubeconfig
 	b.server = object.server
 	return b
 }
@@ -81,6 +93,7 @@ func (b *ServerConfigBuilder) Build() (object *ServerConfig, err error) {
 	object.id = b.id
 	object.href = b.href
 	object.bitmap_ = b.bitmap_
+	object.kubeconfig = b.kubeconfig
 	object.server = b.server
 	return
 }
