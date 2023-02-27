@@ -21,7 +21,6 @@ package v1 // github.com/openshift-online/ocm-sdk-go/clustersmgmt/v1
 
 import (
 	"io"
-	"net/http"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/openshift-online/ocm-sdk-go/helpers"
@@ -31,7 +30,10 @@ import (
 func MarshalLog(object *Log, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeLog(object, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -70,7 +72,6 @@ func writeLog(object *Log, stream *jsoniter.Stream) {
 		}
 		stream.WriteObjectField("content")
 		stream.WriteString(object.content)
-		count++
 	}
 	stream.WriteObjectEnd()
 }
@@ -78,9 +79,6 @@ func writeLog(object *Log, stream *jsoniter.Stream) {
 // UnmarshalLog reads a value of the 'log' type from the given
 // source, which can be an slice of bytes, a string or a reader.
 func UnmarshalLog(source interface{}) (object *Log, err error) {
-	if source == http.NoBody {
-		return
-	}
 	iterator, err := helpers.NewIterator(source)
 	if err != nil {
 		return

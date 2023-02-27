@@ -21,7 +21,6 @@ package v1 // github.com/openshift-online/ocm-sdk-go/clustersmgmt/v1
 
 import (
 	"io"
-	"net/http"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/openshift-online/ocm-sdk-go/helpers"
@@ -31,7 +30,10 @@ import (
 func MarshalAddOnParameter(object *AddOnParameter, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeAddOnParameter(object, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -72,7 +74,16 @@ func writeAddOnParameter(object *AddOnParameter, stream *jsoniter.Stream) {
 		writeAddOn(object.addon, stream)
 		count++
 	}
-	present_ = object.bitmap_&16 != 0
+	present_ = object.bitmap_&16 != 0 && object.conditions != nil
+	if present_ {
+		if count > 0 {
+			stream.WriteMore()
+		}
+		stream.WriteObjectField("conditions")
+		writeAddOnRequirementList(object.conditions, stream)
+		count++
+	}
+	present_ = object.bitmap_&32 != 0
 	if present_ {
 		if count > 0 {
 			stream.WriteMore()
@@ -81,7 +92,7 @@ func writeAddOnParameter(object *AddOnParameter, stream *jsoniter.Stream) {
 		stream.WriteString(object.defaultValue)
 		count++
 	}
-	present_ = object.bitmap_&32 != 0
+	present_ = object.bitmap_&64 != 0
 	if present_ {
 		if count > 0 {
 			stream.WriteMore()
@@ -90,7 +101,7 @@ func writeAddOnParameter(object *AddOnParameter, stream *jsoniter.Stream) {
 		stream.WriteString(object.description)
 		count++
 	}
-	present_ = object.bitmap_&64 != 0
+	present_ = object.bitmap_&128 != 0
 	if present_ {
 		if count > 0 {
 			stream.WriteMore()
@@ -99,7 +110,16 @@ func writeAddOnParameter(object *AddOnParameter, stream *jsoniter.Stream) {
 		stream.WriteBool(object.editable)
 		count++
 	}
-	present_ = object.bitmap_&128 != 0
+	present_ = object.bitmap_&256 != 0
+	if present_ {
+		if count > 0 {
+			stream.WriteMore()
+		}
+		stream.WriteObjectField("editable_direction")
+		stream.WriteString(object.editableDirection)
+		count++
+	}
+	present_ = object.bitmap_&512 != 0
 	if present_ {
 		if count > 0 {
 			stream.WriteMore()
@@ -108,7 +128,7 @@ func writeAddOnParameter(object *AddOnParameter, stream *jsoniter.Stream) {
 		stream.WriteBool(object.enabled)
 		count++
 	}
-	present_ = object.bitmap_&256 != 0
+	present_ = object.bitmap_&1024 != 0
 	if present_ {
 		if count > 0 {
 			stream.WriteMore()
@@ -117,7 +137,7 @@ func writeAddOnParameter(object *AddOnParameter, stream *jsoniter.Stream) {
 		stream.WriteString(object.name)
 		count++
 	}
-	present_ = object.bitmap_&512 != 0 && object.options != nil
+	present_ = object.bitmap_&2048 != 0 && object.options != nil
 	if present_ {
 		if count > 0 {
 			stream.WriteMore()
@@ -126,7 +146,7 @@ func writeAddOnParameter(object *AddOnParameter, stream *jsoniter.Stream) {
 		writeAddOnParameterOptionList(object.options, stream)
 		count++
 	}
-	present_ = object.bitmap_&1024 != 0
+	present_ = object.bitmap_&4096 != 0
 	if present_ {
 		if count > 0 {
 			stream.WriteMore()
@@ -135,7 +155,7 @@ func writeAddOnParameter(object *AddOnParameter, stream *jsoniter.Stream) {
 		stream.WriteBool(object.required)
 		count++
 	}
-	present_ = object.bitmap_&2048 != 0
+	present_ = object.bitmap_&8192 != 0
 	if present_ {
 		if count > 0 {
 			stream.WriteMore()
@@ -144,14 +164,22 @@ func writeAddOnParameter(object *AddOnParameter, stream *jsoniter.Stream) {
 		stream.WriteString(object.validation)
 		count++
 	}
-	present_ = object.bitmap_&4096 != 0
+	present_ = object.bitmap_&16384 != 0
+	if present_ {
+		if count > 0 {
+			stream.WriteMore()
+		}
+		stream.WriteObjectField("validation_err_msg")
+		stream.WriteString(object.validationErrMsg)
+		count++
+	}
+	present_ = object.bitmap_&32768 != 0
 	if present_ {
 		if count > 0 {
 			stream.WriteMore()
 		}
 		stream.WriteObjectField("value_type")
 		stream.WriteString(object.valueType)
-		count++
 	}
 	stream.WriteObjectEnd()
 }
@@ -159,9 +187,6 @@ func writeAddOnParameter(object *AddOnParameter, stream *jsoniter.Stream) {
 // UnmarshalAddOnParameter reads a value of the 'add_on_parameter' type from the given
 // source, which can be an slice of bytes, a string or a reader.
 func UnmarshalAddOnParameter(source interface{}) (object *AddOnParameter, err error) {
-	if source == http.NoBody {
-		return
-	}
 	iterator, err := helpers.NewIterator(source)
 	if err != nil {
 		return
@@ -195,42 +220,54 @@ func readAddOnParameter(iterator *jsoniter.Iterator) *AddOnParameter {
 			value := readAddOn(iterator)
 			object.addon = value
 			object.bitmap_ |= 8
+		case "conditions":
+			value := readAddOnRequirementList(iterator)
+			object.conditions = value
+			object.bitmap_ |= 16
 		case "default_value":
 			value := iterator.ReadString()
 			object.defaultValue = value
-			object.bitmap_ |= 16
+			object.bitmap_ |= 32
 		case "description":
 			value := iterator.ReadString()
 			object.description = value
-			object.bitmap_ |= 32
+			object.bitmap_ |= 64
 		case "editable":
 			value := iterator.ReadBool()
 			object.editable = value
-			object.bitmap_ |= 64
+			object.bitmap_ |= 128
+		case "editable_direction":
+			value := iterator.ReadString()
+			object.editableDirection = value
+			object.bitmap_ |= 256
 		case "enabled":
 			value := iterator.ReadBool()
 			object.enabled = value
-			object.bitmap_ |= 128
+			object.bitmap_ |= 512
 		case "name":
 			value := iterator.ReadString()
 			object.name = value
-			object.bitmap_ |= 256
+			object.bitmap_ |= 1024
 		case "options":
 			value := readAddOnParameterOptionList(iterator)
 			object.options = value
-			object.bitmap_ |= 512
+			object.bitmap_ |= 2048
 		case "required":
 			value := iterator.ReadBool()
 			object.required = value
-			object.bitmap_ |= 1024
+			object.bitmap_ |= 4096
 		case "validation":
 			value := iterator.ReadString()
 			object.validation = value
-			object.bitmap_ |= 2048
+			object.bitmap_ |= 8192
+		case "validation_err_msg":
+			value := iterator.ReadString()
+			object.validationErrMsg = value
+			object.bitmap_ |= 16384
 		case "value_type":
 			value := iterator.ReadString()
 			object.valueType = value
-			object.bitmap_ |= 4096
+			object.bitmap_ |= 32768
 		default:
 			iterator.ReadAny()
 		}

@@ -31,7 +31,10 @@ import (
 func MarshalCloudProviderList(list []*CloudProvider, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeCloudProviderList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalCloudProviderList(source interface{}) (items []*CloudProvider, err
 	return
 }
 
-// readCloudProviderList reads list of values of the ''cloud_provider' type from
+// readCloudProviderList reads list of values of the ”cloud_provider' type from
 // the given iterator.
 func readCloudProviderList(iterator *jsoniter.Iterator) []*CloudProvider {
 	list := []*CloudProvider{}

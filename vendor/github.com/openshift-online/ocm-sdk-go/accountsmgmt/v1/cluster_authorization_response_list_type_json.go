@@ -31,7 +31,10 @@ import (
 func MarshalClusterAuthorizationResponseList(list []*ClusterAuthorizationResponse, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeClusterAuthorizationResponseList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalClusterAuthorizationResponseList(source interface{}) (items []*Clu
 	return
 }
 
-// readClusterAuthorizationResponseList reads list of values of the ''cluster_authorization_response' type from
+// readClusterAuthorizationResponseList reads list of values of the ”cluster_authorization_response' type from
 // the given iterator.
 func readClusterAuthorizationResponseList(iterator *jsoniter.Iterator) []*ClusterAuthorizationResponse {
 	list := []*ClusterAuthorizationResponse{}

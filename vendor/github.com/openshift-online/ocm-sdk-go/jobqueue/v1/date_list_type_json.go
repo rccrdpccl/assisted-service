@@ -32,7 +32,10 @@ import (
 func MarshalDateList(list []time.Time, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeDateList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -61,7 +64,7 @@ func UnmarshalDateList(source interface{}) (items []time.Time, err error) {
 	return
 }
 
-// readDateList reads list of values of the ''date' type from
+// readDateList reads list of values of the ”date' type from
 // the given iterator.
 func readDateList(iterator *jsoniter.Iterator) []time.Time {
 	list := []time.Time{}

@@ -21,7 +21,6 @@ package v1 // github.com/openshift-online/ocm-sdk-go/authorizations/v1
 
 import (
 	"io"
-	"net/http"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/openshift-online/ocm-sdk-go/helpers"
@@ -31,7 +30,10 @@ import (
 func MarshalResourceReviewRequest(object *ResourceReviewRequest, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeResourceReviewRequest(object, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -58,7 +60,16 @@ func writeResourceReviewRequest(object *ResourceReviewRequest, stream *jsoniter.
 		stream.WriteString(object.action)
 		count++
 	}
-	present_ = object.bitmap_&4 != 0
+	present_ = object.bitmap_&4 != 0 && object.excludeSubscriptionStatuses != nil
+	if present_ {
+		if count > 0 {
+			stream.WriteMore()
+		}
+		stream.WriteObjectField("exclude_subscription_statuses")
+		writeSubscriptionStatusList(object.excludeSubscriptionStatuses, stream)
+		count++
+	}
+	present_ = object.bitmap_&8 != 0
 	if present_ {
 		if count > 0 {
 			stream.WriteMore()
@@ -67,14 +78,13 @@ func writeResourceReviewRequest(object *ResourceReviewRequest, stream *jsoniter.
 		stream.WriteBool(object.reduceClusterList)
 		count++
 	}
-	present_ = object.bitmap_&8 != 0
+	present_ = object.bitmap_&16 != 0
 	if present_ {
 		if count > 0 {
 			stream.WriteMore()
 		}
 		stream.WriteObjectField("resource_type")
 		stream.WriteString(object.resourceType)
-		count++
 	}
 	stream.WriteObjectEnd()
 }
@@ -82,9 +92,6 @@ func writeResourceReviewRequest(object *ResourceReviewRequest, stream *jsoniter.
 // UnmarshalResourceReviewRequest reads a value of the 'resource_review_request' type from the given
 // source, which can be an slice of bytes, a string or a reader.
 func UnmarshalResourceReviewRequest(source interface{}) (object *ResourceReviewRequest, err error) {
-	if source == http.NoBody {
-		return
-	}
 	iterator, err := helpers.NewIterator(source)
 	if err != nil {
 		return
@@ -111,14 +118,18 @@ func readResourceReviewRequest(iterator *jsoniter.Iterator) *ResourceReviewReque
 			value := iterator.ReadString()
 			object.action = value
 			object.bitmap_ |= 2
+		case "exclude_subscription_statuses":
+			value := readSubscriptionStatusList(iterator)
+			object.excludeSubscriptionStatuses = value
+			object.bitmap_ |= 4
 		case "reduce_cluster_list":
 			value := iterator.ReadBool()
 			object.reduceClusterList = value
-			object.bitmap_ |= 4
+			object.bitmap_ |= 8
 		case "resource_type":
 			value := iterator.ReadString()
 			object.resourceType = value
-			object.bitmap_ |= 8
+			object.bitmap_ |= 16
 		default:
 			iterator.ReadAny()
 		}

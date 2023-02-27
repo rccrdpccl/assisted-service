@@ -21,7 +21,6 @@ package v1 // github.com/openshift-online/ocm-sdk-go/clustersmgmt/v1
 
 import (
 	"io"
-	"net/http"
 	"sort"
 
 	jsoniter "github.com/json-iterator/go"
@@ -32,7 +31,10 @@ import (
 func MarshalClusterNodes(object *ClusterNodes, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeClusterNodes(object, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -115,7 +117,16 @@ func writeClusterNodes(object *ClusterNodes, stream *jsoniter.Stream) {
 		stream.WriteInt(object.infra)
 		count++
 	}
-	present_ = object.bitmap_&64 != 0
+	present_ = object.bitmap_&64 != 0 && object.infraMachineType != nil
+	if present_ {
+		if count > 0 {
+			stream.WriteMore()
+		}
+		stream.WriteObjectField("infra_machine_type")
+		writeMachineType(object.infraMachineType, stream)
+		count++
+	}
+	present_ = object.bitmap_&128 != 0
 	if present_ {
 		if count > 0 {
 			stream.WriteMore()
@@ -124,14 +135,31 @@ func writeClusterNodes(object *ClusterNodes, stream *jsoniter.Stream) {
 		stream.WriteInt(object.master)
 		count++
 	}
-	present_ = object.bitmap_&128 != 0
+	present_ = object.bitmap_&256 != 0 && object.masterMachineType != nil
+	if present_ {
+		if count > 0 {
+			stream.WriteMore()
+		}
+		stream.WriteObjectField("master_machine_type")
+		writeMachineType(object.masterMachineType, stream)
+		count++
+	}
+	present_ = object.bitmap_&512 != 0 && object.securityGroupFilters != nil
+	if present_ {
+		if count > 0 {
+			stream.WriteMore()
+		}
+		stream.WriteObjectField("security_group_filters")
+		writeMachinePoolSecurityGroupFilterList(object.securityGroupFilters, stream)
+		count++
+	}
+	present_ = object.bitmap_&1024 != 0
 	if present_ {
 		if count > 0 {
 			stream.WriteMore()
 		}
 		stream.WriteObjectField("total")
 		stream.WriteInt(object.total)
-		count++
 	}
 	stream.WriteObjectEnd()
 }
@@ -139,9 +167,6 @@ func writeClusterNodes(object *ClusterNodes, stream *jsoniter.Stream) {
 // UnmarshalClusterNodes reads a value of the 'cluster_nodes' type from the given
 // source, which can be an slice of bytes, a string or a reader.
 func UnmarshalClusterNodes(source interface{}) (object *ClusterNodes, err error) {
-	if source == http.NoBody {
-		return
-	}
 	iterator, err := helpers.NewIterator(source)
 	if err != nil {
 		return
@@ -192,14 +217,26 @@ func readClusterNodes(iterator *jsoniter.Iterator) *ClusterNodes {
 			value := iterator.ReadInt()
 			object.infra = value
 			object.bitmap_ |= 32
+		case "infra_machine_type":
+			value := readMachineType(iterator)
+			object.infraMachineType = value
+			object.bitmap_ |= 64
 		case "master":
 			value := iterator.ReadInt()
 			object.master = value
-			object.bitmap_ |= 64
+			object.bitmap_ |= 128
+		case "master_machine_type":
+			value := readMachineType(iterator)
+			object.masterMachineType = value
+			object.bitmap_ |= 256
+		case "security_group_filters":
+			value := readMachinePoolSecurityGroupFilterList(iterator)
+			object.securityGroupFilters = value
+			object.bitmap_ |= 512
 		case "total":
 			value := iterator.ReadInt()
 			object.total = value
-			object.bitmap_ |= 128
+			object.bitmap_ |= 1024
 		default:
 			iterator.ReadAny()
 		}
