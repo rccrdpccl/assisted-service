@@ -31,7 +31,10 @@ import (
 func MarshalProductList(list []*Product, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeProductList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalProductList(source interface{}) (items []*Product, err error) {
 	return
 }
 
-// readProductList reads list of values of the ''product' type from
+// readProductList reads list of values of the ”product' type from
 // the given iterator.
 func readProductList(iterator *jsoniter.Iterator) []*Product {
 	list := []*Product{}

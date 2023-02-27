@@ -21,7 +21,6 @@ package v1 // github.com/openshift-online/ocm-sdk-go/clustersmgmt/v1
 
 import (
 	"io"
-	"net/http"
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
@@ -32,7 +31,10 @@ import (
 func MarshalSocketTotalNodeRoleOSMetricNode(object *SocketTotalNodeRoleOSMetricNode, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeSocketTotalNodeRoleOSMetricNode(object, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -75,7 +77,6 @@ func writeSocketTotalNodeRoleOSMetricNode(object *SocketTotalNodeRoleOSMetricNod
 		}
 		stream.WriteObjectField("time")
 		stream.WriteString((object.time).Format(time.RFC3339))
-		count++
 	}
 	stream.WriteObjectEnd()
 }
@@ -83,9 +84,6 @@ func writeSocketTotalNodeRoleOSMetricNode(object *SocketTotalNodeRoleOSMetricNod
 // UnmarshalSocketTotalNodeRoleOSMetricNode reads a value of the 'socket_total_node_role_OS_metric_node' type from the given
 // source, which can be an slice of bytes, a string or a reader.
 func UnmarshalSocketTotalNodeRoleOSMetricNode(source interface{}) (object *SocketTotalNodeRoleOSMetricNode, err error) {
-	if source == http.NoBody {
-		return
-	}
 	iterator, err := helpers.NewIterator(source)
 	if err != nil {
 		return

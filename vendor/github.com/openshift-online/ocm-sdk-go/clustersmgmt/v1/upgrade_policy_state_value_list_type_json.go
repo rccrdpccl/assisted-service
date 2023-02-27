@@ -31,7 +31,10 @@ import (
 func MarshalUpgradePolicyStateValueList(list []UpgradePolicyStateValue, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeUpgradePolicyStateValueList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalUpgradePolicyStateValueList(source interface{}) (items []UpgradePo
 	return
 }
 
-// readUpgradePolicyStateValueList reads list of values of the ''upgrade_policy_state_value' type from
+// readUpgradePolicyStateValueList reads list of values of the ”upgrade_policy_state_value' type from
 // the given iterator.
 func readUpgradePolicyStateValueList(iterator *jsoniter.Iterator) []UpgradePolicyStateValue {
 	list := []UpgradePolicyStateValue{}

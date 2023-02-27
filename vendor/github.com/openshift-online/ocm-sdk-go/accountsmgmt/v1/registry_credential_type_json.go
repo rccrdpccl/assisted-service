@@ -21,7 +21,6 @@ package v1 // github.com/openshift-online/ocm-sdk-go/accountsmgmt/v1
 
 import (
 	"io"
-	"net/http"
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
@@ -32,7 +31,10 @@ import (
 func MarshalRegistryCredential(object *RegistryCredential, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeRegistryCredential(object, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -125,7 +127,6 @@ func writeRegistryCredential(object *RegistryCredential, stream *jsoniter.Stream
 		}
 		stream.WriteObjectField("username")
 		stream.WriteString(object.username)
-		count++
 	}
 	stream.WriteObjectEnd()
 }
@@ -133,9 +134,6 @@ func writeRegistryCredential(object *RegistryCredential, stream *jsoniter.Stream
 // UnmarshalRegistryCredential reads a value of the 'registry_credential' type from the given
 // source, which can be an slice of bytes, a string or a reader.
 func UnmarshalRegistryCredential(source interface{}) (object *RegistryCredential, err error) {
-	if source == http.NoBody {
-		return
-	}
 	iterator, err := helpers.NewIterator(source)
 	if err != nil {
 		return

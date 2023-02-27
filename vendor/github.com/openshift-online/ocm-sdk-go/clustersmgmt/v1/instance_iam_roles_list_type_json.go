@@ -31,7 +31,10 @@ import (
 func MarshalInstanceIAMRolesList(list []*InstanceIAMRoles, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeInstanceIAMRolesList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalInstanceIAMRolesList(source interface{}) (items []*InstanceIAMRole
 	return
 }
 
-// readInstanceIAMRolesList reads list of values of the ''instance_IAM_roles' type from
+// readInstanceIAMRolesList reads list of values of the ”instance_IAM_roles' type from
 // the given iterator.
 func readInstanceIAMRolesList(iterator *jsoniter.Iterator) []*InstanceIAMRoles {
 	list := []*InstanceIAMRoles{}

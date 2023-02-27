@@ -31,7 +31,10 @@ import (
 func MarshalLDAPAttributesList(list []*LDAPAttributes, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeLDAPAttributesList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalLDAPAttributesList(source interface{}) (items []*LDAPAttributes, e
 	return
 }
 
-// readLDAPAttributesList reads list of values of the ''LDAP_attributes' type from
+// readLDAPAttributesList reads list of values of the ”LDAP_attributes' type from
 // the given iterator.
 func readLDAPAttributesList(iterator *jsoniter.Iterator) []*LDAPAttributes {
 	list := []*LDAPAttributes{}

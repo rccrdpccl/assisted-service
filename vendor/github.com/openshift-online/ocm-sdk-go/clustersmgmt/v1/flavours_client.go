@@ -20,15 +20,14 @@ limitations under the License.
 package v1 // github.com/openshift-online/ocm-sdk-go/clustersmgmt/v1
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"path"
 
-	jsoniter "github.com/json-iterator/go"
 	"github.com/openshift-online/ocm-sdk-go/errors"
 	"github.com/openshift-online/ocm-sdk-go/helpers"
 )
@@ -62,8 +61,6 @@ func (c *FlavoursClient) Add() *FlavoursAddRequest {
 }
 
 // List creates a request for the 'list' method.
-//
-//
 func (c *FlavoursClient) List() *FlavoursListRequest {
 	return &FlavoursListRequest{
 		transport: c.transport,
@@ -102,6 +99,13 @@ func (r *FlavoursAddRequest) Header(name string, value interface{}) *FlavoursAdd
 	return r
 }
 
+// Impersonate wraps requests on behalf of another user.
+// Note: Services that do not support this feature may silently ignore this call.
+func (r *FlavoursAddRequest) Impersonate(user string) *FlavoursAddRequest {
+	helpers.AddImpersonationHeader(&r.header, user)
+	return r
+}
+
 // Body sets the value of the 'body' parameter.
 //
 // Details of the cluster flavour.
@@ -135,7 +139,7 @@ func (r *FlavoursAddRequest) SendContext(ctx context.Context) (result *FlavoursA
 		Method: "POST",
 		URL:    uri,
 		Header: header,
-		Body:   ioutil.NopCloser(buffer),
+		Body:   io.NopCloser(buffer),
 	}
 	if ctx != nil {
 		request = request.WithContext(ctx)
@@ -148,29 +152,25 @@ func (r *FlavoursAddRequest) SendContext(ctx context.Context) (result *FlavoursA
 	result = &FlavoursAddResponse{}
 	result.status = response.StatusCode
 	result.header = response.Header
+	reader := bufio.NewReader(response.Body)
+	_, err = reader.Peek(1)
+	if err == io.EOF {
+		err = nil
+		return
+	}
 	if result.status >= 400 {
-		result.err, err = errors.UnmarshalError(response.Body)
+		result.err, err = errors.UnmarshalErrorStatus(reader, result.status)
 		if err != nil {
 			return
 		}
 		err = result.err
 		return
 	}
-	err = readFlavoursAddResponse(result, response.Body)
+	err = readFlavoursAddResponse(result, reader)
 	if err != nil {
 		return
 	}
 	return
-}
-
-// marshall is the method used internally to marshal requests for the
-// 'add' method.
-func (r *FlavoursAddRequest) marshal(writer io.Writer) error {
-	stream := helpers.NewStream(writer)
-	r.stream(stream)
-	return stream.Error
-}
-func (r *FlavoursAddRequest) stream(stream *jsoniter.Stream) {
 }
 
 // FlavoursAddResponse is the response for the 'add' method.
@@ -251,6 +251,13 @@ func (r *FlavoursListRequest) Header(name string, value interface{}) *FlavoursLi
 	return r
 }
 
+// Impersonate wraps requests on behalf of another user.
+// Note: Services that do not support this feature may silently ignore this call.
+func (r *FlavoursListRequest) Impersonate(user string) *FlavoursListRequest {
+	helpers.AddImpersonationHeader(&r.header, user)
+	return r
+}
+
 // Order sets the value of the 'order' parameter.
 //
 // Order criteria.
@@ -260,10 +267,9 @@ func (r *FlavoursListRequest) Header(name string, value interface{}) *FlavoursLi
 // the names of the columns of a table. For example, in order to sort the flavours
 // descending by name the value should be:
 //
-// [source,sql]
-// ----
+// ```sql
 // name desc
-// ----
+// ```
 //
 // If the parameter isn't provided, or if the value is empty, then the order of the
 // results is undefined.
@@ -289,10 +295,9 @@ func (r *FlavoursListRequest) Page(value int) *FlavoursListRequest {
 // the names of the columns of a table. For example, in order to retrieve all the
 // flavours with a name starting with `my`the value should be:
 //
-// [source,sql]
-// ----
+// ```sql
 // name like 'my%'
-// ----
+// ```
 //
 // If the parameter isn't provided, or if the value is empty, then all the flavours
 // that the user has permission to see will be returned.
@@ -353,15 +358,21 @@ func (r *FlavoursListRequest) SendContext(ctx context.Context) (result *Flavours
 	result = &FlavoursListResponse{}
 	result.status = response.StatusCode
 	result.header = response.Header
+	reader := bufio.NewReader(response.Body)
+	_, err = reader.Peek(1)
+	if err == io.EOF {
+		err = nil
+		return
+	}
 	if result.status >= 400 {
-		result.err, err = errors.UnmarshalError(response.Body)
+		result.err, err = errors.UnmarshalErrorStatus(reader, result.status)
 		if err != nil {
 			return
 		}
 		err = result.err
 		return
 	}
-	err = readFlavoursListResponse(result, response.Body)
+	err = readFlavoursListResponse(result, reader)
 	if err != nil {
 		return
 	}

@@ -21,7 +21,6 @@ package v1 // github.com/openshift-online/ocm-sdk-go/clustersmgmt/v1
 
 import (
 	"io"
-	"net/http"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/openshift-online/ocm-sdk-go/helpers"
@@ -31,7 +30,10 @@ import (
 func MarshalLDAPIdentityProvider(object *LDAPIdentityProvider, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeLDAPIdentityProvider(object, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -92,7 +94,6 @@ func writeLDAPIdentityProvider(object *LDAPIdentityProvider, stream *jsoniter.St
 		}
 		stream.WriteObjectField("insecure")
 		stream.WriteBool(object.insecure)
-		count++
 	}
 	stream.WriteObjectEnd()
 }
@@ -100,9 +101,6 @@ func writeLDAPIdentityProvider(object *LDAPIdentityProvider, stream *jsoniter.St
 // UnmarshalLDAPIdentityProvider reads a value of the 'LDAP_identity_provider' type from the given
 // source, which can be an slice of bytes, a string or a reader.
 func UnmarshalLDAPIdentityProvider(source interface{}) (object *LDAPIdentityProvider, err error) {
-	if source == http.NoBody {
-		return
-	}
 	iterator, err := helpers.NewIterator(source)
 	if err != nil {
 		return

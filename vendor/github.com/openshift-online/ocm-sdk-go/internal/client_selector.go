@@ -24,10 +24,10 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"net/http/cookiejar"
+	"os"
 	"sync"
 
 	"golang.org/x/net/http2"
@@ -183,7 +183,7 @@ func (b *ClientSelectorBuilder) loadTrustedCAs(ctx context.Context) (result *x50
 				source,
 			)
 			var buffer []byte
-			buffer, err = ioutil.ReadFile(source) // #nosec G304
+			buffer, err = os.ReadFile(source) // #nosec G304
 			if err != nil {
 				result = nil
 				err = fmt.Errorf(
@@ -349,23 +349,12 @@ func (s *ClientSelector) createTransport(ctx context.Context,
 				dialer := net.Dialer{}
 				return dialer.DialContext(ctx, UnixNetwork, address.Socket)
 			}
-			transport.DialTLS = func(_, _ string) (net.Conn, error) { // nolint
-				// TODO: This ignores the passed context because it isn't currently
-				// supported. Once we migrate to Go 1.15 it should be done like
-				// this:
-				//
-				//	transport.DialTLSContext = func(ctx context.Context,
-				//		_, _ string) (net.Conn, error) {
-				//		dialer := tls.Dialer{
-				//			Config: config,
-				//		}
-				//		return dialer.DialContext(ctx, network, address.Socket)
-				//	}
-				//
-				// This will only have a negative impact in applications that
-				// specify a deadline or timeout in the passed context, as it
-				// will be ignored.
-				return tls.Dial(UnixNetwork, address.Socket, config)
+			transport.DialTLSContext = func(ctx context.Context, _, _ string) (net.Conn,
+				error) {
+				dialer := tls.Dialer{
+					Config: config,
+				}
+				return dialer.DialContext(ctx, UnixNetwork, address.Socket)
 			}
 		}
 

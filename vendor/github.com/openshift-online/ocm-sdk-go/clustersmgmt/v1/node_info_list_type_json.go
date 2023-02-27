@@ -31,7 +31,10 @@ import (
 func MarshalNodeInfoList(list []*NodeInfo, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeNodeInfoList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalNodeInfoList(source interface{}) (items []*NodeInfo, err error) {
 	return
 }
 
-// readNodeInfoList reads list of values of the ''node_info' type from
+// readNodeInfoList reads list of values of the ”node_info' type from
 // the given iterator.
 func readNodeInfoList(iterator *jsoniter.Iterator) []*NodeInfo {
 	list := []*NodeInfo{}

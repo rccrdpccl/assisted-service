@@ -31,7 +31,10 @@ import (
 func MarshalSelfFeatureReviewRequestList(list []*SelfFeatureReviewRequest, writer io.Writer) error {
 	stream := helpers.NewStream(writer)
 	writeSelfFeatureReviewRequestList(list, stream)
-	stream.Flush()
+	err := stream.Flush()
+	if err != nil {
+		return err
+	}
 	return stream.Error
 }
 
@@ -60,7 +63,7 @@ func UnmarshalSelfFeatureReviewRequestList(source interface{}) (items []*SelfFea
 	return
 }
 
-// readSelfFeatureReviewRequestList reads list of values of the ''self_feature_review_request' type from
+// readSelfFeatureReviewRequestList reads list of values of the ”self_feature_review_request' type from
 // the given iterator.
 func readSelfFeatureReviewRequestList(iterator *jsoniter.Iterator) []*SelfFeatureReviewRequest {
 	list := []*SelfFeatureReviewRequest{}
